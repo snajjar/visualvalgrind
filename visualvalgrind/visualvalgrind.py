@@ -59,7 +59,6 @@ def compute_node_name_attr(func):
     else:
         label = fname
     return "\"" + label + "\""
-    #return "\"" + label + "\"[fontsize=" + fontsize + ",shape=" + shape + "]" 
 
 # process callstack add the callstack to the good graph, depending on the kind
 # of error. If the kind is new, a new graph is created
@@ -260,7 +259,7 @@ class callgraph:
         # create dot file
         e = ValgrindDOTExporter(self.g)
         e.add_attr("rankdir", "LR") # add attribute to the exporter
-        e.export(fname)
+        e.export(fname + ".dot", fname)
 
 #
 #  Main
@@ -272,7 +271,7 @@ demangle=False          # demangle functions name
 writeFileName=True      # write with the function name the filename and line
 depthMax=12             # max depth of the graph (and the call stacks)
 truncateVal=50          # value to truncate function names to
-separate_kinds=False    # separate the different kind of errors in different graphs
+separate_kinds=True     # separate the different kind of errors in different graphs
 
 # g is a list of [name, graph]
 if separate_kinds:
@@ -288,7 +287,6 @@ for f in sys.argv[1:]:
 # print the graph
 if separate_kinds:
     for graph in g:
-        # print "printing graph " + graph[0]
-        graph[1].draw(graph[0]+ ".dot")
+        graph[1].draw(graph[0])
 else:
     g.draw("graph.dot")

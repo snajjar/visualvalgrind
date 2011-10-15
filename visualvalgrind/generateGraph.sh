@@ -1,17 +1,18 @@
 #!/bin/sh
 
 #clean up
-rm file.dot 2>/dev/null
-rm tmp.dot 2>/dev/null
-rm file.svg 2>/dev/null 
-rm graph.dot 2>/dev/null 
+rm *.dot 2> /dev/null
+rm *.svg 2> /dev/null
 
 # build graph dot file
 python visualvalgrind.py $1
+
 # create svg file
-dot -Tsvg graph.dot > graph.svg
+for dotfile in `ls *.dot` 
+do 
+    base=`basename $dotfile .dot`
+    dot -Tsvg $dotfile > $base.svg 
+done
 
 #clean up
-rm file.dot 2>/dev/null
-rm tmp.dot 2>/dev/null
-rm graph.dot 2>/dev/null 
+rm *.dot 2> /dev/null

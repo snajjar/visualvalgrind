@@ -10,10 +10,10 @@ class DOTExporter(attribute_object):
         self.graph = graph
         attribute_object.__init__(self)
 
-    def export(self, f_name):
+    def export(self, f_name, name="G"):
         # close f when done
         with open(f_name, 'w') as self.f: 
-            self.f.write("digraph G {\n"); 
+            self.f.write("digraph " + name + " {\n"); 
             for attr in self.attrs:
                 self.f.write( attr[0] + "=" + attr[1] + "\n" )
             self.export_nodes()
