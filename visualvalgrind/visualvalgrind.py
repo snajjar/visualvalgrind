@@ -261,17 +261,62 @@ class callgraph:
         e.add_attr("rankdir", "LR") # add attribute to the exporter
         e.export(fname + ".dot", fname)
 
+
+#
+#  arg parsing 
+#
+###############################################################################
+
+
+
+
+import argparse
+parser = argparse.ArgumentParser()
+#parser.add_argument('-d', action='store_true', default=False,
+#                    dest='demangle',
+#                    help='demangle symbols')
+parser.add_argument('-finfo', action='store_true', default=False,
+                    dest='finfo',
+                    help='write file name and line numbers')
+parser.add_argument('-s', action='store_false', default=False,
+                    dest='single',
+                    help='build a single graph with all errors categories')
+parser.add_argument('-depth', action='store', dest='depth',
+                    help='Depth of the graph')
+parser.add_argument('-t', action='store', dest='truncate',
+                    help='Max length of symbols')
+parser.add_argument('valgrind_output_files', action="store", nargs='+')
+results = parser.parse_args()
+
+print results
+
+# values to set
+demangle=False
+#demangle=results.demangle      # demangle functions name
+writeFileName=results.finfo    # write with the function name the filename and line
+depthMax=results.depth         # max depth of the graph (and the call stacks)
+truncateVal=results.truncate   # value to truncate function names to
+separate_kinds= not results.single # separate the different kind of errors in different graphs
+valfiles=results.valgrind_output_files
+
+if not depthMax:
+    depthMax=12
+
+if not truncateVal:
+    truncateVal=50
+    
+
+print "writeFileName", writeFileName
+print "depthMax", depthMax
+print "truncateVal", truncateVal
+print "separate_kinds", separate_kinds
+print "valgrind file:", valfiles 
+
+
 #
 #  Main
 #
 ###############################################################################
-
-# values to set
-demangle=False          # demangle functions name
-writeFileName=True      # write with the function name the filename and line
-depthMax=12             # max depth of the graph (and the call stacks)
-truncateVal=50          # value to truncate function names to
-separate_kinds=True     # separate the different kind of errors in different graphs
 
 # g is a list of [name, graph]
 if separate_kinds:
@@ -280,8 +325,8 @@ else:
     g = callgraph()
 
 # add all leaks to the graph
-for f in sys.argv[1:]:
-    # print "parsing file: " + f
+for f in valfiles: 
+    print "parsing file: " + f
     importXmlFile(f)
 
 # print the graph
