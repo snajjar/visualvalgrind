@@ -253,7 +253,6 @@ class callgraph:
                 # change the weight of the edge (num of leaked bytes)
                 arrow = self.g.get_arrow(callstack[lvl],call)
                 leaked = arrow.get_attr("leak") 
-                print "leaked", leaked
                 arrow.set_attr("leak", leaked + leakedbytes)
             lvl += 1
 
