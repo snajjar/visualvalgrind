@@ -4,6 +4,7 @@ import sys
 import string
 import xml.parsers.expat
 import subprocess
+import re
 
 # Import IOGraph
 import sys
@@ -103,11 +104,12 @@ def end_stack():
 def begin_call():
     global call, in_call
     in_call = True
-    call = ['' for i in range(4)]
+    call = ['' for i in xrange(4)]
 
 def end_call():
     global stack, call, in_call
     in_call = False
+    print "call = ", call
     stack.append(call)
     call = [] 
 
@@ -210,12 +212,13 @@ def importXmlFile(fname):
     # first round just to create all global var
     begin_stack()
     begin_call()
-    end_stack()
     end_call()
+    end_stack()
 
     # parse the file 
     f = open(fname)
     xmlContent = f.read()
+    xmlContent = re.sub("\&.*;", "", xmlContent) # remove &amp; and stuff like that
     p.Parse(xmlContent)
     f.close()
 
