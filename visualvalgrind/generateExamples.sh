@@ -7,7 +7,7 @@ rm *.svg 2> /dev/null
 # build graph dot file
 for rep in `ls examples`
 do
-    python visualvalgrind.py examples/$rep/valtest.xml
+    python visualvalgrind.py -f examples/$rep/valtest.xml
     # create svg file
     for dotfile in `ls *.dot` 
     do 
