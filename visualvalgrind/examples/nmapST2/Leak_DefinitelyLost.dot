@@ -2,7 +2,8 @@ digraph Leak_DefinitelyLost {
 rankdir=LR
 ROOT
 "operator new(unsigned int)"
-""
+"<undefined 2>"
+"<undefined 3>"
 "nmap_mass_rdns(Target**, int)"
 "nexthost(HostGroupState*, TargetGroup*, scan_lists.."
 "nmap_main(int, char**)"
@@ -11,15 +12,22 @@ ROOT
 "safe_malloc"
 "nss_parse_service_list"
 "__nss_database_lookup"
+"<undefined 4>"
+"<undefined 5>"
 "getpwuid_r@@GLIBC_2.1.2"
 "getpwuid"
 "nmap_fetchfile(char*, int, char const*)"
 "NmapOps::Initialize()"
 "NmapOps::NmapOps()"
+"<undefined 6>"
+"<undefined 7>"
+"<undefined 8>"
+"<undefined 9>"
+"<undefined 10>"
 ROOT -> "operator new(unsigned int)" [label=227]
-"operator new(unsigned int)" -> "" [label=227]
-"" -> "" [label=733]
-"" -> "nmap_mass_rdns(Target**, int)" [label=227]
+"operator new(unsigned int)" -> "<undefined 2>" [label=41]
+"<undefined 2>" -> "<undefined 3>" [label=41]
+"<undefined 3>" -> "nmap_mass_rdns(Target**, int)" [label=41]
 "nmap_mass_rdns(Target**, int)" -> "nexthost(HostGroupState*, TargetGroup*, scan_lists.." [label=227]
 "nexthost(HostGroupState*, TargetGroup*, scan_lists.." -> "nmap_main(int, char**)" [label=227]
 "nmap_main(int, char**)" -> "main" [label=270]
@@ -28,11 +36,17 @@ ROOT -> "malloc" [label=203]
 "safe_malloc" -> "nmap_main(int, char**)" [label=43]
 "malloc" -> "nss_parse_service_list" [label=160]
 "nss_parse_service_list" -> "__nss_database_lookup" [label=160]
-"__nss_database_lookup" -> "" [label=160]
-"" -> "getpwuid_r@@GLIBC_2.1.2" [label=160]
+"__nss_database_lookup" -> "<undefined 4>" [label=160]
+"<undefined 4>" -> "<undefined 5>" [label=160]
+"<undefined 5>" -> "getpwuid_r@@GLIBC_2.1.2" [label=160]
 "getpwuid_r@@GLIBC_2.1.2" -> "getpwuid" [label=160]
 "getpwuid" -> "nmap_fetchfile(char*, int, char const*)" [label=160]
 "nmap_fetchfile(char*, int, char const*)" -> "NmapOps::Initialize()" [label=160]
 "NmapOps::Initialize()" -> "NmapOps::NmapOps()" [label=160]
-"NmapOps::NmapOps()" -> "" [label=160]
+"NmapOps::NmapOps()" -> "<undefined 6>" [label=160]
+"<undefined 6>" -> "<undefined 7>" [label=160]
+"operator new(unsigned int)" -> "<undefined 8>" [label=186]
+"<undefined 8>" -> "<undefined 9>" [label=186]
+"<undefined 9>" -> "<undefined 10>" [label=186]
+"<undefined 10>" -> "nmap_mass_rdns(Target**, int)" [label=186]
 }

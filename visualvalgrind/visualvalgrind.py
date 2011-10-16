@@ -41,16 +41,25 @@ leakedbytes = "0"  # init that value
 in_leakedbytes = False
 kind = ""
 in_kind = False
+undefined=1
 
 # build graph name and attributes
 def compute_node_name_attr(func):
     global writeFileName
+    global undefined
     shape = "note"
     fontsize = "9"
     font = ""
     fname = func[0]
     ffile = func[3]
     fline = func[2]
+
+    # don't loose track of undefined function, make them have a different name
+    if fname=="":
+        fname="<undefined "+str(undefined)+">"
+        undefined += 1
+
+    # if user wants file and line number, give it to him
     if writeFileName:
         label=fname
         if ffile!="" and fline!="":
@@ -234,6 +243,7 @@ class callgraph:
         self.stack_size_max = stack_size_max
 
     def addCallStack(self, callstack, leakedbytes):
+        global undefined
         # addind "level 0" to the call stack
         lvl = 0
         callstack.insert(0, "ROOT")
@@ -242,6 +252,7 @@ class callgraph:
                 break
             if call=="ROOT":
                 continue
+
             # try to find if the call exists already in the callgraph
             if not self.g.has_node(call):
                 self.g.add_node(call)
