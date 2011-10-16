@@ -312,8 +312,10 @@ class callgraph:
             if not old_graph.g.has_arrow(src,dest):
                 if not self.g.has_node(src):
                     self.g.add_node(src)
+                    self.g.get_node(src).add_attr("color","red")
                 if not self.g.has_node(dest):
                     self.g.add_node(dest)
+                    self.g.get_node(dest).add_attr("color","red")
                 self.g.add_arrow(src,dest)
                 diff_arrow = self.g.get_arrow(src,dest)
                 diff_arrow.add_attr("leak",new_edge.get_attr("leak"))
