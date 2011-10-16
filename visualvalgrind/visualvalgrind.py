@@ -321,7 +321,7 @@ class callgraph:
             if not new_dst:
                 new_dst = self.g.get_node( dst_name )
             if not self.g.has_arrow(src_name, dst_name):
-                self.g.add_arrow(new_src,new_dst)
+                self.g.add_arrow(src_name,dst_name)
 
             diff_arrow = self.g.get_arrow(src_name, dst_name)
             diff_arrow.add_attr("leak",diff_val)
