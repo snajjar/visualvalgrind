@@ -3,6 +3,5 @@ syntax: glob
 
 *.pyc
 *.dot
-*.svg
 *~
 
