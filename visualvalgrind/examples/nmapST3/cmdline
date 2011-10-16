@@ -1,0 +1,82 @@
+intox@ubuntu:~/dev/repo/visualvalgrind/visualvalgrind$ valgrind --leak-check=full --xml=yes --xml-file="valtest7.xml" nmap -sT 192.168.0-200.0-255
+
+Starting Nmap 5.21 ( http://nmap.org ) at 2011-10-16 05:39 PDT
+Stats: 0:07:35 elapsed; 28668 hosts completed (4 up), 4096 undergoing Ping
+Scan
+Ping Scan Timing: About 81.93% done; ETC: 05:47 (0:00:12 remaining)
+Stats: 0:07:35 elapsed; 28668 hosts completed (4 up), 4096 undergoing Ping
+Scan
+Ping Scan Timing: About 81.93% done; ETC: 05:47 (0:00:12 remaining)
+Stats: 0:07:35 elapsed; 28668 hosts completed (4 up), 4096 undergoing Ping
+Scan
+Ping Scan Timing: About 81.99% done; ETC: 05:47 (0:00:12 remaining)
+Nmap scan report for 192.168.0.10
+Host is up (0.00048s latency).
+Not shown: 988 filtered ports
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+912/tcp   open  unknown
+5357/tcp  open  unknown
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+
+Nmap scan report for 192.168.0.255
+Host is up (0.00048s latency).
+Not shown: 999 closed ports
+PORT    STATE    SERVICE
+514/tcp filtered shell
+
+Nmap scan report for 192.168.106.1
+Host is up (0.00053s latency).
+Not shown: 988 closed ports
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+912/tcp   open  unknown
+5357/tcp  open  unknown
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+
+Nmap scan report for 192.168.106.137
+Host is up (0.0020s latency).
+Not shown: 999 closed ports
+PORT     STATE SERVICE
+9418/tcp open  git
+
+Nmap scan report for 192.168.127.1
+Host is up (0.00051s latency).
+Not shown: 989 filtered ports
+PORT      STATE SERVICE
+80/tcp    open  http
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+912/tcp   open  unknown
+5357/tcp  open  unknown
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+
+Nmap scan report for 192.168.127.255
+Host is up (0.0019s latency).
+Not shown: 999 closed ports
+PORT    STATE    SERVICE
+514/tcp filtered shell
+
+Nmap done: 51456 IP addresses (6 hosts up) scanned in 839.43 seconds
+

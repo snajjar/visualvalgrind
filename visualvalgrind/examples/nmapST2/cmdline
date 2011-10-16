@@ -1,0 +1,28 @@
+~/dev/repo/visualvalgrind/visualvalgrind$ valgrind --leak-check=full --xml=yes --xml-file="valtest6.xml" nmap -sT 192.168.100-110.0-255
+
+Starting Nmap 5.21 ( http://nmap.org ) at 2011-10-16 05:35 PDT
+Nmap scan report for 192.168.106.1
+Host is up (0.0055s latency).
+Not shown: 988 closed ports
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+443/tcp   open  https
+445/tcp   open  microsoft-ds
+912/tcp   open  unknown
+5357/tcp  open  unknown
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+
+Nmap scan report for 192.168.106.137
+Host is up (0.0025s latency).
+Not shown: 999 closed ports
+PORT     STATE SERVICE
+9418/tcp open  git
+
+Nmap done: 2816 IP addresses (2 hosts up) scanned in 85.14 seconds
+
