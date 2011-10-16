@@ -1,37 +1,37 @@
 digraph Leak_DefinitelyLost {
 rankdir=LR
 ROOT
-"operator new(unsigned int)\nvg_replace_malloc.c:255"
+"operator new(unsigned int)"
 ""
 "nmap_mass_rdns(Target**, int)"
 "nexthost(HostGroupState*, TargetGroup*, scan_lists.."
 "nmap_main(int, char**)"
 "main"
-"malloc\nvg_replace_malloc.c:236"
+"malloc"
 "safe_malloc"
-"nss_parse_service_list\nnsswitch.c:626"
-"__nss_database_lookup\nnsswitch.c:167"
-"getpwuid_r@@GLIBC_2.1.2\ngetXXbyYY_r.c:256"
-"getpwuid\ngetXXbyYY.c:117"
+"nss_parse_service_list"
+"__nss_database_lookup"
+"getpwuid_r@@GLIBC_2.1.2"
+"getpwuid"
 "nmap_fetchfile(char*, int, char const*)"
 "NmapOps::Initialize()"
 "NmapOps::NmapOps()"
-ROOT -> "operator new(unsigned int)\nvg_replace_malloc.c:255" [label=227]
-"operator new(unsigned int)\nvg_replace_malloc.c:255" -> "" [label=227]
+ROOT -> "operator new(unsigned int)" [label=227]
+"operator new(unsigned int)" -> "" [label=227]
 "" -> "" [label=733]
 "" -> "nmap_mass_rdns(Target**, int)" [label=227]
 "nmap_mass_rdns(Target**, int)" -> "nexthost(HostGroupState*, TargetGroup*, scan_lists.." [label=227]
 "nexthost(HostGroupState*, TargetGroup*, scan_lists.." -> "nmap_main(int, char**)" [label=227]
 "nmap_main(int, char**)" -> "main" [label=270]
-ROOT -> "malloc\nvg_replace_malloc.c:236" [label=203]
-"malloc\nvg_replace_malloc.c:236" -> "safe_malloc" [label=43]
+ROOT -> "malloc" [label=203]
+"malloc" -> "safe_malloc" [label=43]
 "safe_malloc" -> "nmap_main(int, char**)" [label=43]
-"malloc\nvg_replace_malloc.c:236" -> "nss_parse_service_list\nnsswitch.c:626" [label=160]
-"nss_parse_service_list\nnsswitch.c:626" -> "__nss_database_lookup\nnsswitch.c:167" [label=160]
-"__nss_database_lookup\nnsswitch.c:167" -> "" [label=160]
-"" -> "getpwuid_r@@GLIBC_2.1.2\ngetXXbyYY_r.c:256" [label=160]
-"getpwuid_r@@GLIBC_2.1.2\ngetXXbyYY_r.c:256" -> "getpwuid\ngetXXbyYY.c:117" [label=160]
-"getpwuid\ngetXXbyYY.c:117" -> "nmap_fetchfile(char*, int, char const*)" [label=160]
+"malloc" -> "nss_parse_service_list" [label=160]
+"nss_parse_service_list" -> "__nss_database_lookup" [label=160]
+"__nss_database_lookup" -> "" [label=160]
+"" -> "getpwuid_r@@GLIBC_2.1.2" [label=160]
+"getpwuid_r@@GLIBC_2.1.2" -> "getpwuid" [label=160]
+"getpwuid" -> "nmap_fetchfile(char*, int, char const*)" [label=160]
 "nmap_fetchfile(char*, int, char const*)" -> "NmapOps::Initialize()" [label=160]
 "NmapOps::Initialize()" -> "NmapOps::NmapOps()" [label=160]
 "NmapOps::NmapOps()" -> "" [label=160]
