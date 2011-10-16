@@ -28,8 +28,19 @@ class ValgrindDOTExporter(DOTExporter):
     def export_arrow(self, arrow):
         src_name = arrow.get_src_node().get_name() 
         dst_name = arrow.get_dst_node().get_name() 
-        self.f.write(src_name + " -> " + dst_name +
+        if arrow.has_attr("color"):
+           self.f.write(src_name + " -> " + dst_name +
+                " [label="+str(arrow.get_attr("leak")) + ", "+str(arrow.get_attr("color"))+"]\n")
+        else: 
+            self.f.write(src_name + " -> " + dst_name +
                 " [label="+str(arrow.get_attr("leak")) + "]\n")
+
+    def export_node(self, node):
+        if node.has_attr("color") and str(node.get_attr("color")) != "none" :
+            self.f.write(node.get_name() +
+                " [color="+str(node.get_attr("color")) + ", style=filled]\n")
+        else: 
+            self.f.write(node.get_name() + '\n')
 
 #
 #  parsing from xml file
@@ -257,10 +268,15 @@ class callgraph:
                 self.g.add_node(call)
                 self.g.add_arrow(callstack[lvl],call)
                 self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                # color leave and uncolor source
+                self.g.get_node(call).add_attr("color", "lightblue")
+                self.g.get_node(callstack[lvl]).set_attr("color", "none")
             elif not self.g.has_arrow(callstack[lvl], call):
                 # check if it's a recursive function
                 self.g.add_arrow(callstack[lvl],call)
                 self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                # uncolor source
+                self.g.get_node(callstack[lvl]).set_attr("color", "none")
             else:
                 # change the weight of the edge (num of leaked bytes)
                 arrow = self.g.get_arrow(callstack[lvl],call)
@@ -301,6 +317,8 @@ parser.add_argument('-t', action='store', dest='truncate',
 parser.add_argument('valgrind_output_files', action="store", nargs='+')
 results = parser.parse_args()
 
+#print results
+
 # values to set
 demangle=False
 #demangle=results.demangle      # demangle functions name
@@ -315,6 +333,14 @@ if not depthMax:
 
 if not truncateVal:
     truncateVal=50
+    
+
+#print "writeFileName", writeFileName
+#print "depthMax", depthMax
+#print "truncateVal", truncateVal
+#print "separate_kinds", separate_kinds
+#print "valgrind file:", valfiles 
+
 
 #
 #  Main
@@ -329,6 +355,7 @@ else:
 
 # add all leaks to the graph
 for f in valfiles: 
+    #print "parsing file: " + f
     importXmlFile(f)
 
 # print the graph
