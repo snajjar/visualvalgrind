@@ -330,7 +330,7 @@ class callgraph:
             elif diff_val < 0:
                 diff_arrow.def_attr("color","green")
 
-        # put all ned arrows in red
+        # put all red arrows in red
         for new_arrow in self.g.get_arrows():
             src_name = new_arrow.get_src_node().get_name()
             dst_name = new_arrow.get_dst_node().get_name()  
