@@ -118,7 +118,6 @@ def begin_call():
 def end_call():
     global stack, call, in_call
     in_call = False
-    print "call = ", call
     stack.append(call)
     call = [] 
 
@@ -302,8 +301,6 @@ parser.add_argument('-t', action='store', dest='truncate',
 parser.add_argument('valgrind_output_files', action="store", nargs='+')
 results = parser.parse_args()
 
-print results
-
 # values to set
 demangle=False
 #demangle=results.demangle      # demangle functions name
@@ -318,14 +315,6 @@ if not depthMax:
 
 if not truncateVal:
     truncateVal=50
-    
-
-print "writeFileName", writeFileName
-print "depthMax", depthMax
-print "truncateVal", truncateVal
-print "separate_kinds", separate_kinds
-print "valgrind file:", valfiles 
-
 
 #
 #  Main
@@ -340,7 +329,6 @@ else:
 
 # add all leaks to the graph
 for f in valfiles: 
-    print "parsing file: " + f
     importXmlFile(f)
 
 # print the graph
