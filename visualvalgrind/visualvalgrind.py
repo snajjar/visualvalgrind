@@ -30,7 +30,7 @@ class ValgrindDOTExporter(DOTExporter):
         dst_name = arrow.get_dst_node().get_name() 
         if arrow.has_attr("color"):
            self.f.write(src_name + " -> " + dst_name +
-                " [label="+str(arrow.get_attr("leak")) + ", "+str(arrow.get_attr("color"))+"]\n")
+                " [label="+str(arrow.get_attr("leak")) + ", color="+str(arrow.get_attr("color"))+"]\n")
         else: 
             self.f.write(src_name + " -> " + dst_name +
                 " [label="+str(arrow.get_attr("leak")) + "]\n")
@@ -270,13 +270,13 @@ class callgraph:
                 self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
                 # color leave and uncolor source
                 self.g.get_node(call).add_attr("color", "lightblue")
-                self.g.get_node(callstack[lvl]).set_attr("color", "none")
+                self.g.get_node(callstack[lvl]).def_attr("color", "none")
             elif not self.g.has_arrow(callstack[lvl], call):
                 # check if it's a recursive function
                 self.g.add_arrow(callstack[lvl],call)
                 self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
                 # uncolor source
-                self.g.get_node(callstack[lvl]).set_attr("color", "none")
+                self.g.get_node(callstack[lvl]).def_attr("color", "none")
             else:
                 # change the weight of the edge (num of leaked bytes)
                 arrow = self.g.get_arrow(callstack[lvl],call)
@@ -284,42 +284,58 @@ class callgraph:
                 arrow.set_attr("leak", leaked + leakedbytes)
             lvl += 1
 
-    def diff(self, new_graph, old_graph):
-        for old_edge in old_graph.g.get_arrows:
-            src = old_edge.get_src_node
-            dest =  old_edge.get_dest_node
-            new_edge_leak = 0
-            # update edge leak if leak present
-            if new_graph.g.has_arrow(src,dest):
-                new_edge_leak = new_graph.g.get_arrow(src,dest).get_attr("leak")
-            diff_val = new_edge_leak - old_edge.get_attr("leak")
+    def diff(self, old_graph):
+        # put all new nodes in red
+        for node in self.g.get_nodes():
+            node_name = node.get_name()
+            if not old_graph.g.has_node(node_name):
+                node.def_attr("color","red")
+
+        # for each arrow in old graph, update leak 
+        for old_arrow in old_graph.g.get_arrows():
+            src_name = old_arrow.get_src_node().get_name()
+            dst_name = old_arrow.get_dst_node().get_name()
+
+            # update arrow leak if leak present
+            new_leak = 0
+            if self.g.has_arrow(src_name,dst_name):
+                new_leak = self.g.get_arrow(src_name,dst_name).get_attr("leak")
+            diff_val = new_leak - old_arrow.get_attr("leak")
+
+            if diff_val == 0:
+                continue
+
             # if there is a difference
-            if diff !=0:
-                if not self.g.has_node(src):
-                    self.g.add_node(src)
-                if not self.g.has_node(dest):
-                    self.g.add_node(dest)
-                self.g.add_arrow(src,dest)
-                diff_arrow = self.g.get_arrow(src,dest)
-                diff_arrow.add_attr("leak",diff)
-                if diff > 0:
-                    diff_arrow.add_attr("color","red")
-                else:
-                    diff_arrow.add_attr("color","green")
-        for new_edge in new_graph.g.get_arrows:
-            src = new_edge.get_src_node
-            dest =  new_edge.get_dest_node   
-            if not old_graph.g.has_arrow(src,dest):
-                if not self.g.has_node(src):
-                    self.g.add_node(src)
-                    self.g.get_node(src).add_attr("color","red")
-                if not self.g.has_node(dest):
-                    self.g.add_node(dest)
-                    self.g.get_node(dest).add_attr("color","red")
-                self.g.add_arrow(src,dest)
-                diff_arrow = self.g.get_arrow(src,dest)
-                diff_arrow.add_attr("leak",new_edge.get_attr("leak"))
-                diff_arrow.add_attr("color","red")
+            new_src = None
+            new_dst = None
+            if not self.g.has_node(src_name):
+                self.g.add_node(src_name)
+                new_src = self.g.get_node( src_name )
+                new_src.def_attr("color", "green")
+            if not self.g.has_node(dst_name):
+                self.g.add_node(dst_name)
+                new_dst = self.g.get_node( dst_name )
+                new_dst.def_attr("color", "green")
+            if not new_src:
+                new_src = self.g.get_node( src_name )
+            if not new_dst:
+                new_dst = self.g.get_node( dst_name )
+            if not self.g.has_arrow(src_name, dst_name):
+                self.g.add_arrow(new_src,new_dst)
+
+            diff_arrow = self.g.get_arrow(src_name, dst_name)
+            diff_arrow.add_attr("leak",diff_val)
+            if diff_val > 0:
+                diff_arrow.def_attr("color","red")
+            elif diff_val < 0:
+                diff_arrow.def_attr("color","green")
+
+        # put all ned arrows in red
+        for new_arrow in self.g.get_arrows():
+            src_name = new_arrow.get_src_node().get_name()
+            dst_name = new_arrow.get_dst_node().get_name()  
+            if not old_graph.g.has_arrow(src_name, dst_name):
+                new_arrow.def_attr("color","red")
 
     def draw(self, fname="leak.dot", node="ROOT"):
         # create dot file
@@ -351,10 +367,9 @@ parser.add_argument('-depth', action='store', dest='depth',
                     help='Depth of the graph')
 parser.add_argument('-t', action='store', dest='truncate',
                     help='Max length of symbols')
-parser.add_argument('valgrind_output_files', action="store", nargs='+')
+parser.add_argument('-f', action="store", dest="files", nargs='+', help='Valgrind xml output files')
+parser.add_argument('--diff', action="store", dest="difffiles", nargs='+', help='old Valgrind output files')
 results = parser.parse_args()
-
-#print results
 
 # values to set
 demangle=False
@@ -363,21 +378,13 @@ writeFileName=results.finfo    # write with the function name the filename and l
 depthMax=results.depth         # max depth of the graph (and the call stacks)
 truncateVal=results.truncate   # value to truncate function names to
 separate_kinds= not results.single # separate the different kind of errors in different graphs
-valfiles=results.valgrind_output_files
+valfiles=results.files
 
 if not depthMax:
     depthMax=12
 
 if not truncateVal:
     truncateVal=50
-    
-
-#print "writeFileName", writeFileName
-#print "depthMax", depthMax
-#print "truncateVal", truncateVal
-#print "separate_kinds", separate_kinds
-#print "valgrind file:", valfiles 
-
 
 #
 #  Main
@@ -390,10 +397,38 @@ if separate_kinds:
 else:
     g = callgraph()
 
+# if diff required, import diff files
+if results.difffiles:
+    for f in results.difffiles: 
+        importXmlFile(f)   
+
+    # move g to gdiff
+    gdiff = g
+    if separate_kinds:
+        g = []
+    else:
+        g = callgraph()
+
+    # reinit default values
+    leakedbytes = "0"  # init that value
+    in_leakedbytes = False
+    kind = ""
+    in_kind = False
+    undefined=1
+
 # add all leaks to the graph
 for f in valfiles: 
-    #print "parsing file: " + f
     importXmlFile(f)
+
+# if diff required, apply diff
+if results.difffiles:
+    if separate_kinds:
+        for graph in g:
+            for dgraph in gdiff:
+                if graph[0] == dgraph[0]: # compare kinds
+                    graph[1].diff(dgraph[1])
+    else:
+        g.diff(gdiff) 
 
 # print the graph
 if separate_kinds:

@@ -7,7 +7,7 @@ ROOT
 "nmap_mass_rdns(Target**, int)"
 "nexthost(HostGroupState*, TargetGroup*, scan_lists.."
 "nmap_main(int, char**)"
-"main"
+"main" [color=lightblue, style=filled]
 "malloc"
 "safe_malloc"
 "nss_parse_service_list"
@@ -20,7 +20,7 @@ ROOT
 "NmapOps::Initialize()"
 "NmapOps::NmapOps()"
 "<undefined 6>"
-"<undefined 7>"
+"<undefined 7>" [color=lightblue, style=filled]
 "<undefined 8>"
 "<undefined 9>"
 "<undefined 10>"

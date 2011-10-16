@@ -34,4 +34,8 @@ class attribute_object(object):
                 attr[1] = value
                 return True
         return False
+
+    def def_attr(self, name, value):
+        if not self.set_attr(name, value):
+            self.add_attr(name, value)
             
