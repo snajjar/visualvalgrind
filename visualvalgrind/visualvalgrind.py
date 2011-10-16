@@ -284,6 +284,41 @@ class callgraph:
                 arrow.set_attr("leak", leaked + leakedbytes)
             lvl += 1
 
+    def diff(self, new_graph, old_graph):
+        for old_edge in old_graph.g.get_arrows:
+            src = old_edge.get_src_node
+            dest =  old_edge.get_dest_node
+            new_edge_leak = 0
+            # update edge leak if leak present
+            if new_graph.g.has_arrow(src,dest):
+                new_edge_leak = new_graph.g.get_arrow(src,dest).get_attr("leak")
+            diff_val = new_edge_leak - old_edge.get_attr("leak")
+            # if there is a difference
+            if diff !=0:
+                if not self.g.has_node(src):
+                    self.g.add_node(src)
+                if not self.g.has_node(dest):
+                    self.g.add_node(dest)
+                self.g.add_arrow(src,dest)
+                diff_arrow = self.g.get_arrow(src,dest)
+                diff_arrow.add_attr("leak",diff)
+                if diff > 0:
+                    diff_arrow.add_attr("color","red")
+                else:
+                    diff_arrow.add_attr("color","green")
+        for new_edge in new_graph.g.get_arrows:
+            src = new_edge.get_src_node
+            dest =  new_edge.get_dest_node   
+            if not old_graph.g.has_arrow(src,dest):
+                if not self.g.has_node(src):
+                    self.g.add_node(src)
+                if not self.g.has_node(dest):
+                    self.g.add_node(dest)
+                self.g.add_arrow(src,dest)
+                diff_arrow = self.g.get_arrow(src,dest)
+                diff_arrow.add_attr("leak",new_edge.get_attr("leak"))
+                diff_arrow.add_attr("color","red")
+
     def draw(self, fname="leak.dot", node="ROOT"):
         # create dot file
         e = ValgrindDOTExporter(self.g)
