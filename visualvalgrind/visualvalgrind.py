@@ -357,6 +357,8 @@ parser = argparse.ArgumentParser()
 #parser.add_argument('-d', action='store_true', default=False,
 #                    dest='demangle',
 #                    help='demangle symbols')
+parser.add_argument('-f', action="store", dest="files", nargs='+', help='Valgrind xml output files', required=True)
+parser.add_argument('--diff', action="store", dest="difffiles", nargs='+', help='old Valgrind output files')
 parser.add_argument('-finfo', action='store_true', default=False,
                     dest='finfo',
                     help='write file name and line numbers')
@@ -367,8 +369,6 @@ parser.add_argument('-depth', action='store', dest='depth',
                     help='Depth of the graph')
 parser.add_argument('-t', action='store', dest='truncate',
                     help='Max length of symbols')
-parser.add_argument('-f', action="store", dest="files", nargs='+', help='Valgrind xml output files')
-parser.add_argument('--diff', action="store", dest="difffiles", nargs='+', help='old Valgrind output files')
 results = parser.parse_args()
 
 # values to set
