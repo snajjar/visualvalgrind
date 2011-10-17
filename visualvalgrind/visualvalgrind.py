@@ -238,7 +238,10 @@ def importXmlFile(fname):
     f = open(fname)
     xmlContent = f.read()
     xmlContent = re.sub("\&.*;", "", xmlContent) # remove &amp; and stuff like that
-    p.Parse(xmlContent)
+    try:
+        p.Parse(xmlContent)
+    except:
+        print "Error: the file " + fname + " is not well-formed"
     f.close()
 
 #
