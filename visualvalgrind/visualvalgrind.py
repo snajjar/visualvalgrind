@@ -340,6 +340,29 @@ class callgraph:
             if not old_graph.g.has_arrow(src_name, dst_name):
                 new_arrow.def_attr("color","red")
 
+    def diff_only(self, old_graph):
+        # remove all unchanged arrows (or arrow with lower weight)
+        for old_arrow in old_graph.g.get_arrows():
+            src_name = old_arrow.get_src_node().get_name()
+            dst_name = old_arrow.get_dst_node().get_name()
+            old_weight = old_arrow.get_attr("leak")
+
+            new_arrow = self.g.get_arrow(src_name, dst_name)
+            if new_arrow is None:
+                continue
+
+            new_weight = new_arrow.get_attr("leak")
+            if new_weight <= old_weight:
+                self.g.del_arrow(src_name, dst_name)
+            else:
+                print "NOT removing arrow between " + src_name + " and " + dst_name + " : " , new_weight , ", " , old_weight
+
+        # remove all node that aren't link to an arrow anymore
+        # we can not remove element from a list while looping on it 
+        nodes_to_be_removed = [n for n in self.g.get_nodes() if not n.has_arrows()]
+        for node in nodes_to_be_removed:
+            self.g.del_node( node.get_name() )
+
     def draw(self, fname="leak.dot", node="ROOT"):
         global results
         # create dot file
@@ -378,6 +401,8 @@ parser.add_argument('-t', action='store', dest='truncate', type=int,
                     default=50, help='Max length of symbols')
 parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
+parser.add_argument('--diff-only', action='store_true', default=False,
+                    dest='diffonly', help='write file name and line numbers')
 results = parser.parse_args()
 
 # values to set
@@ -429,9 +454,15 @@ if results.difffiles:
         for graph in g:
             for dgraph in gdiff:
                 if graph[0] == dgraph[0]: # compare kinds
-                    graph[1].diff(dgraph[1])
+                    if results.diffonly:
+                        graph[1].diff_only(dgraph[1])
+                    else:
+                        graph[1].diff(dgraph[1])
     else:
-        g.diff(gdiff) 
+        if results.diffonly:
+            g.diff_only(gdiff) 
+        else:
+            g.diff(gdiff) 
 
 # print the graph
 if separate_kinds:
