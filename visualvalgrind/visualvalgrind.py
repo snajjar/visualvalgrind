@@ -341,10 +341,14 @@ class callgraph:
                 new_arrow.def_attr("color","red")
 
     def draw(self, fname="leak.dot", node="ROOT"):
+        global results
         # create dot file
         e = ValgrindDOTExporter(self.g)
         e.add_attr("rankdir", "LR") # add attribute to the exporter
-        e.export(fname + ".dot", fname)
+        if( results.output_dir ):
+            e.export( results.output_dir + "/" + fname + ".dot", fname)
+        else:
+            e.export(fname + ".dot", fname)
 
 
 #
@@ -372,6 +376,8 @@ parser.add_argument('-depth', action='store', dest='depth',
                     help='Depth of the graph')
 parser.add_argument('-t', action='store', dest='truncate',
                     help='Max length of symbols')
+parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
+                    help='change output directory')
 results = parser.parse_args()
 
 # values to set
