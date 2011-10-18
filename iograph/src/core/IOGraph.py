@@ -88,19 +88,19 @@ class Graph(attribute_object):
         if node2 is None:
             s = "Node " + n2name + " not found"
             raise Arrow_not_deletable(n1name, n2name, s)
-        if not (node1.has_out_arrow(n2name) and node2.has_in_arrow(n1name)):
+        arrow = self.get_arrow( n1name, n2name )
+        if arrow is None:
             raise Arrow_not_deletable(n1name, n2name, "Arrow doesn't exist")
         node1.del_out_arrow(n2name)
         node2.del_in_arrow(n1name)
+        self.arrows.remove(arrow)
 
     def del_node(self, node_name):
         node = self.get_node(node_name)
         if node is None:
             raise Node_not_deletable(node_name, "Node not found")
-        if node.get_in_arrows() != []:
-            raise Node_not_deletable(node_name, "Node has in arrows")
-        if node.get_out_arrows() != []:
-            raise Node_not_deletable(node_name, "Node has out arrows")
+        if node.has_arrows():
+            raise Node_not_deletable(node_name, "Node has arrows")
         self.nodes.remove(node)
 
     def get_nodes(self):

@@ -34,17 +34,26 @@ class Node(attribute_object):
                 return True
         return False
 
+    def has_in_arrows(self):
+        return self.in_arrows != []
+
+    def has_out_arrows(self):
+        return self.out_arrows != []
+
+    def has_arrows(self):
+        return self.has_in_arrows() or self.has_out_arrows()
+
     def del_in_arrow(self, node_name):
         for n in self.in_arrows:
-            if n.get_name() == node_name:
+            if n.get_src_node().get_name() == node_name:
                 self.in_arrows.remove(n)
                 return True
         return False
 
     def del_out_arrow(self, node_name):
         for n in self.out_arrows:
-            if n.get_name() == node_name:
-                self.in_arrows.remove(n)
+            if n.get_dst_node().get_name() == node_name:
+                self.out_arrows.remove(n)
                 return True
         return False
 
