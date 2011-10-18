@@ -340,7 +340,7 @@ class callgraph:
             if not old_graph.g.has_arrow(src_name, dst_name):
                 new_arrow.def_attr("color","red")
 
-    def diff_only(self, old_graph):
+    def diff_only(self, old_graph, ratio):
         # remove all unchanged arrows (or arrow with lower weight)
         for old_arrow in old_graph.g.get_arrows():
             src_name = old_arrow.get_src_node().get_name()
@@ -352,7 +352,7 @@ class callgraph:
                 continue
 
             new_weight = new_arrow.get_attr("leak")
-            if new_weight <= old_weight:
+            if new_weight  <= old_weight + ratio:
                 self.g.del_arrow(src_name, dst_name)
             else:
                 print "NOT removing arrow between " + src_name + " and " + dst_name + " : " , new_weight , ", " , old_weight
@@ -403,6 +403,8 @@ parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
 parser.add_argument('--diff-only', action='store_true', default=False,
                     dest='diffonly', help='write file name and line numbers')
+parser.add_argument('--diff-ratio', action='store', dest='ratio', type=int,
+                    default=0, help='only display leaks that have increased by more than ratio')
 results = parser.parse_args()
 
 # values to set
@@ -413,6 +415,7 @@ depthMax=results.depth         # max depth of the graph (and the call stacks)
 truncateVal=results.truncate   # value to truncate function names to
 separate_kinds= not results.single # separate the different kind of errors in different graphs
 valfiles=results.files
+
 
 #
 #  Main
@@ -455,12 +458,12 @@ if results.difffiles:
             for dgraph in gdiff:
                 if graph[0] == dgraph[0]: # compare kinds
                     if results.diffonly:
-                        graph[1].diff_only(dgraph[1])
+                        graph[1].diff_only(dgraph[1],results.ratio)
                     else:
                         graph[1].diff(dgraph[1])
     else:
         if results.diffonly:
-            g.diff_only(gdiff) 
+            g.diff_only(gdiff,results.ratio) 
         else:
             g.diff(gdiff) 
 
