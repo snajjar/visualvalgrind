@@ -372,10 +372,10 @@ parser.add_argument('-finfo', action='store_true', default=False,
 parser.add_argument('-s', action='store_false', default=False,
                     dest='single',
                     help='build a single graph with all errors categories')
-parser.add_argument('-depth', action='store', dest='depth',
-                    help='Depth of the graph')
-parser.add_argument('-t', action='store', dest='truncate',
-                    help='Max length of symbols')
+parser.add_argument('-depth', action='store', dest='depth', type=int,
+                    default=12, help='Depth of the graph')
+parser.add_argument('-t', action='store', dest='truncate', type=int,
+                    default=50, help='Max length of symbols')
 parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
 results = parser.parse_args()
@@ -388,12 +388,6 @@ depthMax=results.depth         # max depth of the graph (and the call stacks)
 truncateVal=results.truncate   # value to truncate function names to
 separate_kinds= not results.single # separate the different kind of errors in different graphs
 valfiles=results.files
-
-if not depthMax:
-    depthMax=12
-
-if not truncateVal:
-    truncateVal=50
 
 #
 #  Main
