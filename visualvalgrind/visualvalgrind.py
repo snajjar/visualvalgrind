@@ -352,7 +352,7 @@ class callgraph:
                 continue
 
             new_weight = new_arrow.get_attr("leak")
-            if new_weight  <= old_weight + ratio:
+            if new_weight  <= old_weight * ratio:
                 self.g.del_arrow(src_name, dst_name)
             else:
                 print "NOT removing arrow between " + src_name + " and " + dst_name + " : " , new_weight , ", " , old_weight
@@ -403,8 +403,8 @@ parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
 parser.add_argument('--diff-only', action='store_true', default=False,
                     dest='diffonly', help='write file name and line numbers')
-parser.add_argument('--diff-ratio', action='store', dest='ratio', type=int,
-                    default=0, help='only display leaks that have increased by more than ratio')
+parser.add_argument('--diff-ratio', action='store', dest='ratio', type=float,
+                    default=1, help='only display leaks that have increased by at least <ratio> times')
 results = parser.parse_args()
 
 # values to set
