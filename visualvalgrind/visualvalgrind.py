@@ -383,27 +383,36 @@ class callgraph:
 
 
 import argparse
-parser = argparse.ArgumentParser()
-#parser.add_argument('-d', action='store_true', default=False,
-#                    dest='demangle',
-#                    help='demangle symbols')
-parser.add_argument('-f', action="store", dest="files", nargs='+', help='Valgrind xml output files', required=True)
-parser.add_argument('--diff', action="store", dest="difffiles", nargs='+', help='old Valgrind output files')
-parser.add_argument('-finfo', action='store_true', default=False,
-                    dest='finfo',
-                    help='write file name and line numbers')
+parser = argparse.ArgumentParser(prog='visualvalgrind')
+# common arguments
 parser.add_argument('-s', action='store_false', default=False,
                     dest='single',
                     help='build a single graph with all errors categories')
+parser.add_argument('-finfo', action='store_true', default=False,
+                    dest='finfo',
+                    help='write file name and line numbers')
 parser.add_argument('-depth', action='store', dest='depth', type=int,
                     default=12, help='Depth of the graph')
 parser.add_argument('-t', action='store', dest='truncate', type=int,
                     default=50, help='Max length of symbols')
 parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
-parser.add_argument('--diff-only', action='store_true', default=False,
-                    dest='diffonly', help='write file name and line numbers')
-parser.add_argument('--diff-ratio', action='store', dest='ratio', type=float,
+#parser.add_argument('-d', action='store_true', default=False,
+#                    dest='demangle',
+#                    help='demangle symbols')
+subparsers = parser.add_subparsers(dest='cmd', help='sub-command help')
+
+#sub-command "build"
+parser_build = subparsers.add_parser('build', help='build help')
+parser_build.add_argument("files", nargs='+', help='Valgrind xml output files')
+
+#sub-command "diff"
+parser_diff = subparsers.add_parser('diff', help='diff help')
+parser_diff.add_argument('-new', action="store", dest="files", nargs='+', help='new Valgrind output files', required=True)
+parser_diff.add_argument('-old', action="store", dest="difffiles", nargs='+', help='old Valgrind output files', required=True)
+parser_diff.add_argument('-i', action='store_true', default=False,
+                    dest='diffonly', help='only display leaks that have increased')
+parser_diff.add_argument('-r', action='store', dest='ratio', type=float,
                     default=1, help='only display leaks that have increased by at least <ratio> times')
 results = parser.parse_args()
 
@@ -429,7 +438,7 @@ else:
     g = callgraph()
 
 # if diff required, import diff files
-if results.difffiles:
+if results.cmd=='diff':
     for f in results.difffiles: 
         importXmlFile(f)   
 
@@ -452,7 +461,7 @@ for f in valfiles:
     importXmlFile(f)
 
 # if diff required, apply diff
-if results.difffiles:
+if results.cmd=='diff':
     if separate_kinds:
         for graph in g:
             for dgraph in gdiff:
