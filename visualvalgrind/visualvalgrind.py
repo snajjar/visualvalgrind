@@ -364,22 +364,83 @@ class callgraph:
             self.g.del_node( node.get_name() )
 
     def draw(self, fname="leak.dot", node="ROOT"):
-        global results
+        global output_dir
         # create dot file
         e = ValgrindDOTExporter(self.g)
         e.add_attr("rankdir", "LR") # add attribute to the exporter
-        if( results.output_dir ):
-            e.export( results.output_dir + "/" + fname + ".dot", fname)
+        if( output_dir ):
+            e.export( output_dir + "/" + fname + ".dot", fname)
         else:
             e.export(fname + ".dot", fname)
+
+
+#
+#  command calls
+#
+##############################################################################
+
+
+def init_g():
+    global g
+    if separate_kinds:
+        g = []
+    else:
+        g = callgraph()
+        
+
+def add_files(files):
+    for f in files: 
+        importXmlFile(f)
+
+def print_graph(separated):
+    global g
+    if separated:
+        for graph in g:
+            graph[1].draw(graph[0])
+    else:
+        g.draw("graph.dot")
+
+
+def build_cmd(args):
+    init_g()
+    add_files(args.files)
+    print_graph(not args.single)
+
+
+def diff_cmd(args):
+    global g, gdiff, leakedbytes, in_leakedbytes, kind, in_kind, undefined
+    init_g()
+    add_files(args.difffiles)
+    gdiff = g
+    init_g()
+    leakedbytes = "0"  # init that value
+    in_leakedbytes = False
+    kind = ""
+    in_kind = False
+    undefined=1
+    add_files(args.files)
+    if args.single:
+        if args.diffonly:
+            g.diff_only(gdiff,args.ratio) 
+        else:
+            g.diff(gdiff) 
+    else:
+        for graph in g:
+            for dgraph in gdiff:
+                if graph[0] == dgraph[0]: # compare kinds
+                    if args.diffonly:
+                        graph[1].diff_only(dgraph[1],args.ratio)
+                    else:
+                        graph[1].diff(dgraph[1])
+    print_graph(not args.single)
+
+
 
 
 #
 #  arg parsing 
 #
 ###############################################################################
-
-
 
 
 import argparse
@@ -400,11 +461,12 @@ parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
 #parser.add_argument('-d', action='store_true', default=False,
 #                    dest='demangle',
 #                    help='demangle symbols')
-subparsers = parser.add_subparsers(dest='cmd', help='sub-command help')
+subparsers = parser.add_subparsers(help='sub-command help')
 
 #sub-command "build"
 parser_build = subparsers.add_parser('build', help='build help')
 parser_build.add_argument("files", nargs='+', help='Valgrind xml output files')
+parser_build.set_defaults(func=build_cmd)
 
 #sub-command "diff"
 parser_diff = subparsers.add_parser('diff', help='diff help')
@@ -414,71 +476,23 @@ parser_diff.add_argument('-i', action='store_true', default=False,
                     dest='diffonly', help='only display leaks that have increased')
 parser_diff.add_argument('-r', action='store', dest='ratio', type=float,
                     default=1, help='only display leaks that have increased by at least <ratio> times')
-results = parser.parse_args()
+parser_diff.set_defaults(func=diff_cmd)
 
-# values to set
+
+args = parser.parse_args()
+
 demangle=False
-#demangle=results.demangle      # demangle functions name
-writeFileName=results.finfo    # write with the function name the filename and line
-depthMax=results.depth         # max depth of the graph (and the call stacks)
-truncateVal=results.truncate   # value to truncate function names to
-separate_kinds= not results.single # separate the different kind of errors in different graphs
-valfiles=results.files
+writeFileName=args.finfo    # write with the function name the filename and line
+depthMax=args.depth         # max depth of the graph (and the call stacks)
+truncateVal=args.truncate   # value to truncate function names to
+separate_kinds = not args.single
+output_dir = args.output_dir 
 
 
 #
-#  Main
+#  MAIN
 #
 ###############################################################################
 
-# g is a list of [name, graph]
-if separate_kinds:
-    g = []
-else:
-    g = callgraph()
+args.func(args)
 
-# if diff required, import diff files
-if results.cmd=='diff':
-    for f in results.difffiles: 
-        importXmlFile(f)   
-
-    # move g to gdiff
-    gdiff = g
-    if separate_kinds:
-        g = []
-    else:
-        g = callgraph()
-
-    # reinit default values
-    leakedbytes = "0"  # init that value
-    in_leakedbytes = False
-    kind = ""
-    in_kind = False
-    undefined=1
-
-# add all leaks to the graph
-for f in valfiles: 
-    importXmlFile(f)
-
-# if diff required, apply diff
-if results.cmd=='diff':
-    if separate_kinds:
-        for graph in g:
-            for dgraph in gdiff:
-                if graph[0] == dgraph[0]: # compare kinds
-                    if results.diffonly:
-                        graph[1].diff_only(dgraph[1],results.ratio)
-                    else:
-                        graph[1].diff(dgraph[1])
-    else:
-        if results.diffonly:
-            g.diff_only(gdiff,results.ratio) 
-        else:
-            g.diff(gdiff) 
-
-# print the graph
-if separate_kinds:
-    for graph in g:
-        graph[1].draw(graph[0])
-else:
-    g.draw("graph.dot")
