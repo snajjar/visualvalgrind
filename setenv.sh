@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # find out the directory where this script is
-DIR=$PWD/`dirname $0`
+DIR=$PWD/`dirname ${BASH_SOURCE[@]}`
 REALDIR=$(readlink -f $DIR)
 LIBDIR=$REALDIR/visualvalgrind/libs
 
@@ -12,3 +12,4 @@ if [ "$test" = "" ]; then
 fi
 alias vv="$REALDIR/visualvalgrind/visualvalgrind.py"
 alias visualvalgrind="$REALDIR/visualvalgrind/visualvalgrind.py"
+
