@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # colors
-white='\033[37m'
-red='\033[31m'   # Red
+red='\033[30,42m'   # Red
 green='\033[32m'   # Green
 
 echo "$white"
@@ -18,15 +17,17 @@ do
     for sd in $subdirs
     do
         cd $sd
-        echo "   Playing test $sd:" 
-        sleep 2
+        echo -n "   Playing test $sd:" 
         res=`./validate.sh`
         if [ "$res" = "1" ]; then
-            echo -e \\033[A"Playing test $sd:$green OK$white"
+            echo "$green OK"
         else
-            echo -e \\033[A"Playing test $sd:$red KO$white"
+            echo "$red KO"
         fi
+        tput sgr0 #reset color to normal
         cd ..
     done
     cd ..
 done
+
+echo "Regression ended"
