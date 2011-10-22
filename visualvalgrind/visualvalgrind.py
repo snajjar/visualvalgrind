@@ -354,8 +354,6 @@ class callgraph:
             new_weight = new_arrow.get_attr("leak")
             if new_weight  <= old_weight * ratio:
                 self.g.del_arrow(src_name, dst_name)
-            else:
-                print "NOT removing arrow between " + src_name + " and " + dst_name + " : " , new_weight , ", " , old_weight
 
         # remove all node that aren't link to an arrow anymore
         # we can not remove element from a list while looping on it 

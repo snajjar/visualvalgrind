@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # find out the directory where this script is
-DIR=$PWD/`dirname ${BASH_SOURCE[@]}`
-REALDIR=$(readlink -f $DIR)
-LIBDIR=$REALDIR/visualvalgrind/libs
+DIR=$(cd $(dirname "${BASH_SOURCE[@]}"); pwd)
+REALDIR="$(readlink -f $DIR)"
+LIBDIR="$REALDIR/visualvalgrind/libs"
 
 # export lib dir in PYTHONPATH if not already in there
 test=$(echo $PYTHONPATH | sed "s/:/\n/g")
