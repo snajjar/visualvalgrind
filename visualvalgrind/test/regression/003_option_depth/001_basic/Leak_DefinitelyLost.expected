@@ -1,0 +1,24 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+ROOT
+"malloc"
+"safe_malloc"
+"nmap_main(int, char**)" [color=lightblue, style=filled]
+"operator new(unsigned int)"
+"<undefined 2>"
+"<undefined 3>" [color=lightblue, style=filled]
+"nss_parse_service_list"
+"__nss_database_lookup" [color=lightblue, style=filled]
+"<undefined 8>"
+"<undefined 9>" [color=lightblue, style=filled]
+ROOT -> "malloc" [label=195]
+"malloc" -> "safe_malloc" [label=35]
+"safe_malloc" -> "nmap_main(int, char**)" [label=35]
+ROOT -> "operator new(unsigned int)" [label=227]
+"operator new(unsigned int)" -> "<undefined 2>" [label=41]
+"<undefined 2>" -> "<undefined 3>" [label=41]
+"malloc" -> "nss_parse_service_list" [label=160]
+"nss_parse_service_list" -> "__nss_database_lookup" [label=160]
+"operator new(unsigned int)" -> "<undefined 8>" [label=186]
+"<undefined 8>" -> "<undefined 9>" [label=186]
+}

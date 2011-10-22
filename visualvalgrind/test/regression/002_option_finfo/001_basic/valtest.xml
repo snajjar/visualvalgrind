@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+
+<valgrindoutput>
+
+<protocolversion>2</protocolversion>
+
+<preamble>
+  <line>Memcheck, a memory error detector.</line>
+  <line>Copyright (C) 2002-2006, and GNU GPL'd, by Julian Seward et 
+al.</line>
+  <line>Using LibVEX rev 1671, a library for dynamic binary 
+translation.</line>
+  <line>Copyright (C) 2004-2006, and GNU GPL'd, by OpenWorks LLP.</line>
+  <line>Using valgrind-3.3.0.SVN, a dynamic binary instrumentation 
+framework.</line>
+  <line>Copyright (C) 2000-2006, and GNU GPL'd, by Julian Seward et 
+al.</line>
+</preamble>
+
+<pid>13612</pid>
+<ppid>13610</ppid>
+<tool>memcheck</tool>
+
+<args>
+  <vargv>
+    <exe>/usr/local/bin/valgrind</exe>
+    
+<arg>--log-file-exactly=/home/lsc/.valkyrie/logs/mc_log-2006.12.27-18.16.49.xml</arg>
+    <arg>--tool=memcheck</arg>
+    <arg>--xml=yes</arg>
+    <arg>--suppressions=/home/lsc/FG/cvs/valgrind.supp</arg>
+  </vargv>
+  <argv>
+    <exe>/home/lsc/FG/cvs1/build/src/Main/fgfs</exe>
+    <arg>--fg-root=/home/lsc/FG/cvs/data</arg>
+  </argv>
+</args>
+
+<status>
+  <state>RUNNING</state>
+  <time>00:00:00:01.063</time>
+</status>
+
+<error>
+  <unique>0x36</unique>
+  <tid>1</tid>
+  <kind>InvalidRead</kind>
+  <what>Invalid read of size 4</what>
+  <stack>
+    <frame>
+      <ip>0x462690A2</ip>
+      <obj>/usr/lib/nvidia/libGL.so.1.0.8774</obj>
+      <ep>unknown</ep>
+    </frame>
+  </stack>
+  <auxwhat>Address 0x45416D4 is 2,948 bytes inside a block of size 2,949 
+alloc'd</auxwhat>
+  <stack>
+    <frame>
+      <ip>0x40053F0</ip>
+      <obj>/usr/local/lib/valgrind/x86-linux/vgpreload_memcheck.so</obj>
+      <fn>malloc</fn>
+      <ep>_vgrZU_libcZdsoZa_malloc</ep>
+      <dir>/home/lsc/VG/svn/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>207</line>
+    </frame>
+    <frame>
+      <ip>0x46267EF5</ip>
+      <obj>/usr/lib/nvidia/libGL.so.1.0.8774</obj>
+      <ep>unknown</ep>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x37</unique>
+  <tid>1</tid>
+  <kind>InvalidRead</kind>
+  <what>Invalid read of size 4</what>
+  <stack>
+    <frame>
+      <ip>0x4626910A</ip>
+      <obj>/usr/lib/nvidia/libGL.so.1.0.8774</obj>
+      <ep>unknown</ep>
+    </frame>
+  </stack>
+  <auxwhat>Address 0x45416D4 is 2,948 bytes inside a block of size 2,949 
+alloc'd</auxwhat>
+  <stack>
+    <frame>
+      <ip>0x40053F0</ip>
+      <obj>/usr/local/lib/valgrind/x86-linux/vgpreload_memcheck.so</obj>
+      <fn>malloc</fn>
+      <ep>_vgrZU_libcZdsoZa_malloc</ep>
+      <dir>/home/lsc/VG/svn/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>207</line>
+    </frame>
+    <frame>
+      <ip>0x46267EF5</ip>
+      <obj>/usr/lib/nvidia/libGL.so.1.0.8774</obj>
+      <ep>unknown</ep>
+    </frame>
+  </stack>
+</error>
+
+<error>
+  <unique>0x3A</unique>
+  <tid>1</tid>
+  <kind>SyscallParam</kind>
+  <what>Syscall param write(buf) points to uninitialised byte(s)</what>
+  <stack>
+    <frame>
+      <ip>0x47659CB3</ip>
+      <obj>/lib/libpthread-2.4.so</obj>
+      <fn>__write_nocancel</fn>
+      <ep>__write_nocancel</ep>
+    </frame>
+    <frame>
+      <ip>0x4742850E</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <fn>_X11TransWrite</fn>
+      <ep>_X11TransWrite</ep>
+    </frame>
+    <frame>
+      <ip>0x4742E436</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <ep>unknown</ep>
+    </frame>
+    <frame>
+      <ip>0x4742E53A</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <fn>_XReply</fn>
+      <ep>_XReply</ep>
+    </frame>
+    <frame>
+      <ip>0x47414351</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <fn>XInternAtom</fn>
+      <ep>XInternAtom</ep>
+    </frame>
+    <frame>
+      <ip>0x47427FEB</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <fn>XSetWMProperties</fn>
+      <ep>XSetWMProperties</ep>
+    </frame>
+    <frame>
+      <ip>0x40BC187</ip>
+      <obj>/usr/lib/libglut.so.3.8.0</obj>
+      <fn>fgOpenWindow</fn>
+      <ep>fgOpenWindow</ep>
+    </frame>
+    <frame>
+      <ip>0x40BA6EB</ip>
+      <obj>/usr/lib/libglut.so.3.8.0</obj>
+      <fn>fgCreateWindow</fn>
+      <ep>fgCreateWindow</ep>
+    </frame>
+    <frame>
+      <ip>0x40BBAB4</ip>
+      <obj>/usr/lib/libglut.so.3.8.0</obj>
+      <fn>glutCreateWindow</fn>
+      <ep>glutCreateWindow</ep>
+    </frame>
+    <frame>
+      <ip>0x809D4DB</ip>
+      <obj>/home/lsc/FG/cvs1/build/src/Main/fgfs</obj>
+      <fn>fgOSOpenWindow(int, int, int, bool, bool, bool)</fn>
+      <ep>_Z14fgOSOpenWindowiiibbb</ep>
+      <dir>/home/lsc/FG/cvs1/build/src/Main/../../../source/src/Main</dir>
+      <file>fg_os.cxx</file>
+      <line>211</line>
+    </frame>
+    <frame>
+      <ip>0x805F9AB</ip>
+      <obj>/home/lsc/FG/cvs1/build/src/Main/fgfs</obj>
+      <fn>fgMainInit(int, char**)</fn>
+      <ep>_Z10fgMainInitiPPc</ep>
+      <dir>/home/lsc/FG/cvs1/build/src/Main/../../../source/src/Main</dir>
+      <file>main.cxx</file>
+      <line>1022</line>
+    </frame>
+    <frame>
+      <ip>0x805CFF4</ip>
+      <obj>/home/lsc/FG/cvs1/build/src/Main/fgfs</obj>
+      <fn>main</fn>
+      <ep>main</ep>
+      <dir>/home/lsc/FG/cvs1/build/src/Main/../../../source/src/Main</dir>
+      <file>bootstrap.cxx</file>
+      <line>204</line>
+    </frame>
+  </stack>
+  <auxwhat>Address 0x452683C is 172 bytes inside a block of size 16,384 
+alloc'd</auxwhat>
+  <stack>
+    <frame>
+      <ip>0x400472F</ip>
+      <obj>/usr/local/lib/valgrind/x86-linux/vgpreload_memcheck.so</obj>
+      <fn>calloc</fn>
+      <ep>_vgrZU_libcZdsoZa_calloc</ep>
+      <dir>/home/lsc/VG/svn/valgrind/coregrind/m_replacemalloc</dir>
+      <file>vg_replace_malloc.c</file>
+      <line>391</line>
+    </frame>
+    <frame>
+      <ip>0x474191A6</ip>
+      <obj>/usr/lib/libX11.so.6.2.0</obj>
+      <fn>XOpenDisplay</fn>
+      <ep>XOpenDisplay</ep>
+    </frame>
+    <frame>
+      <ip>0x40B5852</ip>
+      <obj>/usr/lib/libglut.so.3.8.0</obj>
+      <fn>glutInit</fn>
+      <ep>glutInit</ep>
+    </frame>
+    <frame>
+      <ip>0x805F8DA</ip>
+      <obj>/home/lsc/FG/cvs1/build/src/Main/fgfs</obj>
+      <fn>fgMainInit(int, char**)</fn>
+      <ep>_Z10fgMainInitiPPc</ep>
+      <dir>/home/lsc/FG/cvs1/build/src/Main/../../../source/src/Main</dir>
+      <file>main.cxx</file>
+      <line>998</line>
+    </frame>
+    <frame>
+      <ip>0x805CFF4</ip>
+      <obj>/home/lsc/FG/cvs1/build/src/Main/fgfs</obj>
+      <fn>main</fn>
+      <ep>main</ep>
+      <dir>/home/lsc/FG/cvs1/build/src/Main/../../../source/src/Main</dir>
+      <file>bootstrap.cxx</file>
+      <line>204</line>
+    </frame>
+  </stack>
+</error>
