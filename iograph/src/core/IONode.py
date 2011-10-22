@@ -6,8 +6,8 @@ from attribute_object import *
 class Node(attribute_object):
     def __init__(self, name):
         self.name = name
-        self.in_arrows = {}  # arrows arriving in this node
-        self.out_arrows = {} # arrows going to another node
+        self.in_arrows = []  # arrows arriving in this node
+        self.out_arrows = [] # arrows going to another node
         attribute_object.__init__(self)
     
     def set_name(self, name):
@@ -17,40 +17,48 @@ class Node(attribute_object):
         return self.name
 
     def add_in_arrow(self, arrow):
-        self.in_arrows[arrow.get_name()] = arrow
+        self.in_arrows.append(arrow)
     
     def add_out_arrow(self, arrow):
-        self.out_arrows[arrow.get_name()] = arrow
+        self.out_arrows.append(arrow)
 
     def has_in_arrow(self, node_name):
-        return node_name in self.in_arrows
+        for n in self.in_arrows:
+            if n.get_name() == node_name:
+                return True
+        return False
 
     def has_out_arrow(self, node_name):
-        return node_name in self.out_arrows
+        for n in self.out_arrows:
+            if n.get_name() == node_name:
+                return True
+        return False
 
     def has_in_arrows(self):
-        return len (self.in_arrows) > 0
+        return self.in_arrows != []
 
     def has_out_arrows(self):
-        return len (self.out_arrows) > 0
+        return self.out_arrows != []
 
     def has_arrows(self):
         return self.has_in_arrows() or self.has_out_arrows()
 
     def del_in_arrow(self, node_name):
-        if self.has_in_arrow(node_name):
-            del self.in_arrows[node_name]
+        for n in self.in_arrows:
+            if n.get_src_node().get_name() == node_name:
+                self.in_arrows.remove(n)
             return True
         return False
 
     def del_out_arrow(self, node_name):
-        if self.has_out_arrow(node_name):
-            del self.out_arrows[node_name]
+        for n in self.out_arrows:
+            if n.get_dst_node().get_name() == node_name:
+                self.out_arrows.remove(n)
             return True
         return False
 
     def get_in_arrows(self):
-        return self.in_arrows.values()
+        return self.in_arrows
 
     def get_out_arrows(self):
-        return self.out_arrows.values()
+        return self.out_arrows
