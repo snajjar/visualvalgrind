@@ -1,0 +1,22 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"nmap_main(int, char**)"
+"malloc"
+"main" [color=lightblue, style=filled]
+"ultra_scan(std::vector, scan_lists*, stype, timeou.."
+"nexthost(HostGroupState*, TargetGroup*, scan_lists.."
+ROOT
+"safe_malloc"
+"operator new(unsigned int)"
+"UltraScanInfo::Init(std::vector, scan_lists*, styp.."
+"ultra_scan(std::vector, scan_lists*, stype, timeou.." -> "nmap_main(int, char**)" [label=1715]
+"safe_malloc" -> "nmap_main(int, char**)" [label=45]
+"operator new(unsigned int)" -> "UltraScanInfo::Init(std::vector, scan_lists*, styp.." [label=1935]
+"nexthost(HostGroupState*, TargetGroup*, scan_lists.." -> "nmap_main(int, char**)" [label=447]
+ROOT -> "operator new(unsigned int)" [label=2162]
+"UltraScanInfo::Init(std::vector, scan_lists*, styp.." -> "ultra_scan(std::vector, scan_lists*, stype, timeou.." [label=1935]
+"ultra_scan(std::vector, scan_lists*, stype, timeou.." -> "nexthost(HostGroupState*, TargetGroup*, scan_lists.." [label=220]
+"nmap_main(int, char**)" -> "main" [label=2207]
+"malloc" -> "safe_malloc" [label=45]
+ROOT -> "malloc" [label=205]
+}

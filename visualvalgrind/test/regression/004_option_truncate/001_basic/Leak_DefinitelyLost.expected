@@ -1,0 +1,48 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"<undefined 5>"
+"getpw.."
+"nss_p.."
+"safe_.."
+"mallo.."
+"<undefined 9>"
+"__nss.."
+"<undefined 7>" [color=lightblue, style=filled]
+"NmapO.."
+"nmap_.."
+"opera.."
+"<undefined 2>"
+"<undefined 3>"
+"<undefined 10>"
+"<undefined 6>"
+"<undefined 8>"
+"nexth.."
+"main" [color=lightblue, style=filled]
+ROOT
+"<undefined 4>"
+"NmapO.." -> "NmapO.." [label=160]
+"<undefined 2>" -> "<undefined 3>" [label=41]
+"NmapO.." -> "<undefined 6>" [label=160]
+"getpw.." -> "nmap_.." [label=160]
+"nmap_.." -> "nexth.." [label=227]
+"<undefined 6>" -> "<undefined 7>" [label=160]
+"mallo.." -> "safe_.." [label=35]
+"__nss.." -> "<undefined 4>" [label=160]
+"mallo.." -> "nss_p.." [label=160]
+"opera.." -> "<undefined 2>" [label=41]
+"<undefined 9>" -> "<undefined 10>" [label=186]
+ROOT -> "opera.." [label=227]
+"<undefined 10>" -> "nmap_.." [label=186]
+"getpw.." -> "getpw.." [label=160]
+"opera.." -> "<undefined 8>" [label=186]
+"nss_p.." -> "__nss.." [label=160]
+"<undefined 4>" -> "<undefined 5>" [label=160]
+"nexth.." -> "nmap_.." [label=227]
+"<undefined 8>" -> "<undefined 9>" [label=186]
+"<undefined 5>" -> "getpw.." [label=160]
+"<undefined 3>" -> "nmap_.." [label=41]
+"safe_.." -> "nmap_.." [label=35]
+"nmap_.." -> "main" [label=262]
+"nmap_.." -> "NmapO.." [label=160]
+ROOT -> "mallo.." [label=195]
+}

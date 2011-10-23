@@ -1,0 +1,52 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"<undefined 2>"
+"nmap_main(int, char**)"
+"<undefined 3>"
+"<undefined 10>"
+"malloc"
+"nss_parse_service_list"
+"nmap_mass_rdns(Target**, int)"
+"getpwuid_r@@GLIBC_2.1.2"
+"main" [color=lightblue, style=filled]
+"nexthost(HostGroupState*, TargetGroup*, scan_lists.."
+ROOT
+"safe_malloc"
+"nmap_fetchfile(char*, int, char const*)"
+"<undefined 6>"
+"operator new(unsigned int)"
+"getpwuid"
+"<undefined 8>"
+"__nss_database_lookup"
+"NmapOps::NmapOps()"
+"<undefined 9>"
+"NmapOps::Initialize()"
+"<undefined 5>"
+"<undefined 7>" [color=lightblue, style=filled]
+"<undefined 4>"
+"<undefined 2>" -> "<undefined 3>" [label=41]
+"<undefined 10>" -> "nmap_mass_rdns(Target**, int)" [label=186]
+"NmapOps::NmapOps()" -> "<undefined 6>" [label=160]
+"__nss_database_lookup" -> "<undefined 4>" [label=160]
+"<undefined 6>" -> "<undefined 7>" [label=160]
+"safe_malloc" -> "nmap_main(int, char**)" [label=35]
+"<undefined 3>" -> "nmap_mass_rdns(Target**, int)" [label=41]
+"NmapOps::Initialize()" -> "NmapOps::NmapOps()" [label=160]
+"malloc" -> "nss_parse_service_list" [label=160]
+"getpwuid" -> "nmap_fetchfile(char*, int, char const*)" [label=160]
+"nexthost(HostGroupState*, TargetGroup*, scan_lists.." -> "nmap_main(int, char**)" [label=227]
+"<undefined 9>" -> "<undefined 10>" [label=186]
+"getpwuid_r@@GLIBC_2.1.2" -> "getpwuid" [label=160]
+"<undefined 5>" -> "getpwuid_r@@GLIBC_2.1.2" [label=160]
+"nmap_fetchfile(char*, int, char const*)" -> "NmapOps::Initialize()" [label=160]
+"operator new(unsigned int)" -> "<undefined 8>" [label=186]
+"<undefined 4>" -> "<undefined 5>" [label=160]
+ROOT -> "operator new(unsigned int)" [label=227]
+"nmap_mass_rdns(Target**, int)" -> "nexthost(HostGroupState*, TargetGroup*, scan_lists.." [label=227]
+"operator new(unsigned int)" -> "<undefined 2>" [label=41]
+"<undefined 8>" -> "<undefined 9>" [label=186]
+"nss_parse_service_list" -> "__nss_database_lookup" [label=160]
+"nmap_main(int, char**)" -> "main" [label=262]
+"malloc" -> "safe_malloc" [label=35]
+ROOT -> "malloc" [label=195]
+}
