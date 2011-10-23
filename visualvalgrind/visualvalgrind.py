@@ -83,7 +83,7 @@ def compute_node_name_attr(func):
 
 # process callstack add the callstack to the good graph, depending on the kind
 # of error. If the kind is new, a new graph is created
-def process_callstack(kind, callstack, leakedbyte):
+def process_callstack(cs):
     global g, depthMax
 
     if kind=="":
@@ -91,14 +91,14 @@ def process_callstack(kind, callstack, leakedbyte):
 
     # search if the kind exists and if so, add to the graph
     for graph in g:
-        if graph[0] == kind:
-            graph[1].addCallStack(callstack, int(leakedbytes))
+        if graph[0] == cs.kind:
+            graph[1].addCallStack(cs)
             return
 
     # if the kind doesn't exist yet, create it
-    graph = callgraph(depthMax) 
-    graph.addCallStack(callstack, int(leakedbytes))
-    g.append( [kind, graph] )
+    graph = Callgraph(depthMax) 
+    graph.addCallStack(cs)
+    g.append( [cs.kind, graph] )
 
 def begin_stack():
     global parsing, call, stack, in_call, in_stack
@@ -110,11 +110,13 @@ def end_stack():
     global kind
     in_stack = False
     # build the call stack and add it to graph
-    callstack = []
+    func_stack = []
     for func in stack:
         node_name = compute_node_name_attr(func)
-        callstack.append(node_name)
-    process_callstack(kind, callstack, int(leakedbytes))
+        func_stack.append(node_name)
+    func_stack.insert(0, "ROOT")
+    cs = Callstack(kind, func_stack, int(leakedbytes))
+    process_callstack(cs)
     stack = []
 
 def begin_call():
@@ -241,22 +243,46 @@ def importXmlFile(fname):
     f.close()
 
 #
+#  call class
+#
+###############################################################################
+class Callstack:
+    def __init__(self, kind, stack, leak=0):
+        self.stack = stack
+        self.kind = kind
+        self.leak=leak
+
+    # compare callstacks (on kind and stack)
+    def cmp(self, callstack):
+        if self.kind != callstack.kind:
+            return False
+        size = len(self.stack)
+        if size != len(callstack.stack):
+            return False
+        for i in xrange(0, size):
+            if self.stack[i] != callstack.stack[i]:
+                return False
+        return True
+
+
+#
 #  Graph class
 #
 ###############################################################################
 
-class callgraph:
+class Callgraph:
     def __init__(self, stack_size_max=12):
         self.g = Graph() 
         self.g.add_node("ROOT")
         self.stack_size_max = stack_size_max
+        self.callstacks = []
 
-    def addCallStack(self, callstack, leakedbytes):
+    def addCallStack(self, cs):
         global undefined
         # addind "level 0" to the call stack
         lvl = 0
-        callstack.insert(0, "ROOT")
-        for call in callstack:
+        self.callstacks.append(cs) 
+        for call in cs.stack:
             if lvl > self.stack_size_max: 
                 break
             if call=="ROOT":
@@ -265,22 +291,22 @@ class callgraph:
             # try to find if the call exists already in the callgraph
             if not self.g.has_node(call):
                 self.g.add_node(call)
-                self.g.add_arrow(callstack[lvl],call)
-                self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                self.g.add_arrow(cs.stack[lvl],call)
+                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
                 # color leave and uncolor source
                 self.g.get_node(call).add_attr("color", "lightblue")
-                self.g.get_node(callstack[lvl]).def_attr("color", "none")
-            elif not self.g.has_arrow(callstack[lvl], call):
+                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
+            elif not self.g.has_arrow(cs.stack[lvl], call):
                 # check if it's a recursive function
-                self.g.add_arrow(callstack[lvl],call)
-                self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                self.g.add_arrow(cs.stack[lvl],call)
+                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
                 # uncolor source
-                self.g.get_node(callstack[lvl]).def_attr("color", "none")
+                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
             else:
                 # change the weight of the edge (num of leaked bytes)
-                arrow = self.g.get_arrow(callstack[lvl],call)
+                arrow = self.g.get_arrow(cs.stack[lvl],call)
                 leaked = arrow.get_attr("leak") 
-                arrow.set_attr("leak", leaked + leakedbytes)
+                arrow.set_attr("leak", leaked + cs.leak)
             lvl += 1
 
     def diff(self, old_graph):
