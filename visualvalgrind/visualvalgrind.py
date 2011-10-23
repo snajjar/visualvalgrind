@@ -340,7 +340,7 @@ class callgraph:
             if not old_graph.g.has_arrow(src_name, dst_name):
                 new_arrow.def_attr("color","red")
 
-    def diff_only(self, old_graph, ratio):
+    def diff_only(self, old_graph):
         # remove all unchanged arrows (or arrow with lower weight)
         for old_arrow in old_graph.g.get_arrows():
             src_name = old_arrow.get_src_node().get_name()
@@ -352,7 +352,7 @@ class callgraph:
                 continue
 
             new_weight = new_arrow.get_attr("leak")
-            if new_weight  <= old_weight * ratio:
+            if new_weight  <= old_weight:
                 self.g.del_arrow(src_name, dst_name)
 
         # remove all node that aren't link to an arrow anymore
@@ -360,6 +360,13 @@ class callgraph:
         nodes_to_be_removed = [n for n in self.g.get_nodes() if not n.has_arrows()]
         for node in nodes_to_be_removed:
             self.g.del_node( node.get_name() )
+
+    def diff_ratio(self, old_graph, ratio):
+        # get all old leaf nodes and see if their leaks increased
+        leaf_nodes = [n for n in self.g.get_nodes() if not n.has_out_arrows()]
+        for n in leaf_nodes:
+            print n.get_name()
+
 
     def draw(self, fname="leak.dot", node="ROOT"):
         global output_dir
@@ -427,7 +434,9 @@ def diff_cmd(args):
             for dgraph in gdiff:
                 if graph[0] == dgraph[0]: # compare kinds
                     if args.diffonly:
-                        graph[1].diff_only(dgraph[1],args.ratio)
+                        graph[1].diff_only(dgraph[1])
+                    elif args.ratio:
+                        graph[1].diff_ratio(dgraph[1],args.ratio)
                     else:
                         graph[1].diff(dgraph[1])
     print_graph(not args.single)
@@ -470,9 +479,12 @@ parser_build.set_defaults(func=build_cmd)
 parser_diff = subparsers.add_parser('diff', help='diff help')
 parser_diff.add_argument('-new', action="store", dest="files", nargs='+', help='new Valgrind output files', required=True)
 parser_diff.add_argument('-old', action="store", dest="difffiles", nargs='+', help='old Valgrind output files', required=True)
-parser_diff.add_argument('-i', action='store_true', default=False,
+
+# -i and -r are exclusive
+diff_mode = parser_diff.add_mutually_exclusive_group()
+diff_mode.add_argument('-i', action='store_true', default=False,
                     dest='diffonly', help='only display leaks that have increased')
-parser_diff.add_argument('-r', action='store', dest='ratio', type=float,
+diff_mode.add_argument('-r', action='store', dest='ratio', type=float,
                     default=1, help='only display leaks that have increased by at least <ratio> times')
 parser_diff.set_defaults(func=diff_cmd)
 
