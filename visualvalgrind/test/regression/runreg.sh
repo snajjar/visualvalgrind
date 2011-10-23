@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # colors
-red='\033[30,42m'   # Red
+red='\033[31m'   # Red
 green='\033[32m'   # Green
 
 echo "$white"

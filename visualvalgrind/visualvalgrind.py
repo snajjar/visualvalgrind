@@ -83,26 +83,22 @@ def compute_node_name_attr(func):
 
 # process callstack add the callstack to the good graph, depending on the kind
 # of error. If the kind is new, a new graph is created
-def process_callstack(kind, callstack, leakedbyte):
-    global g, depthMax, separate_kinds
+def process_callstack(cs):
+    global g, depthMax
 
     if kind=="":
         return
 
     # search if the kind exists and if so, add to the graph
-    if separate_kinds:
-        for graph in g:
-            if graph[0] == kind:
-                graph[1].addCallStack(callstack, int(leakedbytes))
-                return
+    for graph in g:
+        if graph[0] == cs.kind:
+            graph[1].addCallstack(cs)
+            return
 
-        # if the kind doesn't exist yet, create it
-        graph = callgraph(depthMax) 
-        graph.addCallStack(callstack, int(leakedbytes))
-        g.append( [kind, graph] )
-    else:
-        callstack.insert(0, kind) 
-        g.addCallStack(callstack, int(leakedbytes))
+    # if the kind doesn't exist yet, create it
+    graph = Callgraph(depthMax) 
+    graph.addCallstack(cs)
+    g.append( [cs.kind, graph] )
 
 def begin_stack():
     global parsing, call, stack, in_call, in_stack
@@ -114,11 +110,13 @@ def end_stack():
     global kind
     in_stack = False
     # build the call stack and add it to graph
-    callstack = []
+    func_stack = []
     for func in stack:
         node_name = compute_node_name_attr(func)
-        callstack.append(node_name)
-    process_callstack(kind, callstack, int(leakedbytes))
+        func_stack.append(node_name)
+    func_stack.insert(0, "ROOT")
+    cs = Callstack(kind, func_stack, int(leakedbytes))
+    process_callstack(cs)
     stack = []
 
 def begin_call():
@@ -245,22 +243,46 @@ def importXmlFile(fname):
     f.close()
 
 #
+#  call class
+#
+###############################################################################
+class Callstack:
+    def __init__(self, kind, stack, leak=0):
+        self.stack = stack
+        self.kind = kind
+        self.leak=leak
+
+    # compare callstacks (on kind and stack)
+    def cmp(self, callstack):
+        if self.kind != callstack.kind:
+            return False
+        size = len(self.stack)
+        if size != len(callstack.stack):
+            return False
+        for i in xrange(0, size):
+            if self.stack[i] != callstack.stack[i]:
+                return False
+        return True
+
+
+#
 #  Graph class
 #
 ###############################################################################
 
-class callgraph:
+class Callgraph:
     def __init__(self, stack_size_max=12):
         self.g = Graph() 
         self.g.add_node("ROOT")
         self.stack_size_max = stack_size_max
+        self.callstacks = []
 
-    def addCallStack(self, callstack, leakedbytes):
+    def addCallstack(self, cs):
         global undefined
         # addind "level 0" to the call stack
         lvl = 0
-        callstack.insert(0, "ROOT")
-        for call in callstack:
+        self.callstacks.append(cs) 
+        for call in cs.stack:
             if lvl > self.stack_size_max: 
                 break
             if call=="ROOT":
@@ -269,22 +291,22 @@ class callgraph:
             # try to find if the call exists already in the callgraph
             if not self.g.has_node(call):
                 self.g.add_node(call)
-                self.g.add_arrow(callstack[lvl],call)
-                self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                self.g.add_arrow(cs.stack[lvl],call)
+                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
                 # color leave and uncolor source
                 self.g.get_node(call).add_attr("color", "lightblue")
-                self.g.get_node(callstack[lvl]).def_attr("color", "none")
-            elif not self.g.has_arrow(callstack[lvl], call):
+                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
+            elif not self.g.has_arrow(cs.stack[lvl], call):
                 # check if it's a recursive function
-                self.g.add_arrow(callstack[lvl],call)
-                self.g.get_arrow(callstack[lvl],call).add_attr("leak", leakedbytes)
+                self.g.add_arrow(cs.stack[lvl],call)
+                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
                 # uncolor source
-                self.g.get_node(callstack[lvl]).def_attr("color", "none")
+                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
             else:
                 # change the weight of the edge (num of leaked bytes)
-                arrow = self.g.get_arrow(callstack[lvl],call)
+                arrow = self.g.get_arrow(cs.stack[lvl],call)
                 leaked = arrow.get_attr("leak") 
-                arrow.set_attr("leak", leaked + leakedbytes)
+                arrow.set_attr("leak", leaked + cs.leak)
             lvl += 1
 
     def diff(self, old_graph):
@@ -340,7 +362,7 @@ class callgraph:
             if not old_graph.g.has_arrow(src_name, dst_name):
                 new_arrow.def_attr("color","red")
 
-    def diff_only(self, old_graph, ratio):
+    def diff_only(self, old_graph):
         # remove all unchanged arrows (or arrow with lower weight)
         for old_arrow in old_graph.g.get_arrows():
             src_name = old_arrow.get_src_node().get_name()
@@ -352,7 +374,7 @@ class callgraph:
                 continue
 
             new_weight = new_arrow.get_attr("leak")
-            if new_weight  <= old_weight * ratio:
+            if new_weight <= old_weight:
                 self.g.del_arrow(src_name, dst_name)
 
         # remove all node that aren't link to an arrow anymore
@@ -360,6 +382,18 @@ class callgraph:
         nodes_to_be_removed = [n for n in self.g.get_nodes() if not n.has_arrows()]
         for node in nodes_to_be_removed:
             self.g.del_node( node.get_name() )
+
+    # works differently than the 2 previous one. Compare callstacks with the
+    # old graph, and return a new graph object
+    def diff_ratio(self, old_graph, ratio):
+        graph = Callgraph(self.stack_size_max)
+
+        for old_callstack in old_graph.callstacks:
+            for new_callstack in self.callstacks:
+                if old_callstack.cmp(new_callstack):
+                    if new_callstack.leak >= old_callstack.leak * ratio:
+                        graph.addCallstack( new_callstack )
+        return graph
 
     def draw(self, fname="leak.dot", node="ROOT"):
         global output_dir
@@ -379,58 +413,61 @@ class callgraph:
 
 
 def init_g():
+    global leakedbytes, in_leakedbytes, kind, in_kind, undefined
     global g
-    if separate_kinds:
-        g = []
-    else:
-        g = callgraph()
+    g = []
+
+    # init parser values
+    leakedbytes = "0"  # init that value
+    in_leakedbytes = False
+    kind = ""
+    in_kind = False
+    undefined=1
         
 
 def add_files(files):
     for f in files: 
         importXmlFile(f)
 
-def print_graph(separated):
-    global g
-    if separated:
-        for graph in g:
-            graph[1].draw(graph[0])
-    else:
-        g.draw("graph.dot")
-
+def print_graph(g):
+    for graph in g:
+        graph[1].draw(graph[0])
 
 def build_cmd(args):
+    global g
     init_g()
     add_files(args.files)
-    print_graph(not args.single)
+    print_graph(g)
 
 
 def diff_cmd(args):
-    global g, gdiff, leakedbytes, in_leakedbytes, kind, in_kind, undefined
+    global g
+    # import old graphs 
     init_g()
     add_files(args.difffiles)
-    gdiff = g
+    g_old = g
+
+    # import new graphs
     init_g()
-    leakedbytes = "0"  # init that value
-    in_leakedbytes = False
-    kind = ""
-    in_kind = False
-    undefined=1
     add_files(args.files)
-    if args.single:
-        if args.diffonly:
-            g.diff_only(gdiff,args.ratio) 
-        else:
-            g.diff(gdiff) 
-    else:
-        for graph in g:
-            for dgraph in gdiff:
-                if graph[0] == dgraph[0]: # compare kinds
-                    if args.diffonly:
-                        graph[1].diff_only(dgraph[1],args.ratio)
-                    else:
-                        graph[1].diff(dgraph[1])
-    print_graph(not args.single)
+    g_new = g
+
+    # init result graph 
+    init_g()
+
+    for graph in g_new:
+        for dgraph in g_old:
+            if graph[0] == dgraph[0]: # compare kinds
+                if args.diffonly:
+                    graph[1].diff_only(dgraph[1])
+                    print_graph(g_new)
+                elif args.ratio != 0:
+                    diff_graph = graph[1].diff_ratio(dgraph[1],args.ratio)
+                    g.append( [graph[0], diff_graph] )
+                    print_graph(g)
+                else:
+                    graph[1].diff(dgraph[1])
+                    print_graph(g_new)
 
 
 
@@ -444,9 +481,6 @@ def diff_cmd(args):
 import argparse
 parser = argparse.ArgumentParser(prog='visualvalgrind')
 # common arguments
-parser.add_argument('-s', action='store_false', default=False,
-                    dest='single',
-                    help='build a single graph with all errors categories')
 parser.add_argument('-finfo', action='store_true', default=False,
                     dest='finfo',
                     help='write file name and line numbers')
@@ -470,10 +504,13 @@ parser_build.set_defaults(func=build_cmd)
 parser_diff = subparsers.add_parser('diff', help='diff help')
 parser_diff.add_argument('-new', action="store", dest="files", nargs='+', help='new Valgrind output files', required=True)
 parser_diff.add_argument('-old', action="store", dest="difffiles", nargs='+', help='old Valgrind output files', required=True)
-parser_diff.add_argument('-i', action='store_true', default=False,
+
+# -i and -r are exclusive
+diff_mode = parser_diff.add_mutually_exclusive_group()
+diff_mode.add_argument('-i', action='store_true', default=False,
                     dest='diffonly', help='only display leaks that have increased')
-parser_diff.add_argument('-r', action='store', dest='ratio', type=float,
-                    default=1, help='only display leaks that have increased by at least <ratio> times')
+diff_mode.add_argument('-r', action='store', dest='ratio', type=float,
+                    default=0, help='only display leaks that have increased by at least <ratio> times')
 parser_diff.set_defaults(func=diff_cmd)
 
 
@@ -483,7 +520,6 @@ demangle=False
 writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
-separate_kinds = not args.single
 output_dir = args.output_dir 
 
 
