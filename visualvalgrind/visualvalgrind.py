@@ -283,7 +283,7 @@ class Callgraph:
         lvl = 0
         self.callstacks.append(cs) 
         for call in cs.stack:
-            if lvl > self.stack_size_max: 
+            if lvl >= self.stack_size_max: 
                 break
             if call=="ROOT":
                 continue
