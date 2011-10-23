@@ -92,12 +92,12 @@ def process_callstack(cs):
     # search if the kind exists and if so, add to the graph
     for graph in g:
         if graph[0] == cs.kind:
-            graph[1].addCallStack(cs)
+            graph[1].addCallstack(cs)
             return
 
     # if the kind doesn't exist yet, create it
     graph = Callgraph(depthMax) 
-    graph.addCallStack(cs)
+    graph.addCallstack(cs)
     g.append( [cs.kind, graph] )
 
 def begin_stack():
@@ -277,7 +277,7 @@ class Callgraph:
         self.stack_size_max = stack_size_max
         self.callstacks = []
 
-    def addCallStack(self, cs):
+    def addCallstack(self, cs):
         global undefined
         # addind "level 0" to the call stack
         lvl = 0
@@ -374,7 +374,7 @@ class Callgraph:
                 continue
 
             new_weight = new_arrow.get_attr("leak")
-            if new_weight  <= old_weight:
+            if new_weight <= old_weight:
                 self.g.del_arrow(src_name, dst_name)
 
         # remove all node that aren't link to an arrow anymore
@@ -383,12 +383,17 @@ class Callgraph:
         for node in nodes_to_be_removed:
             self.g.del_node( node.get_name() )
 
+    # works differently than the 2 previous one. Compare callstacks with the
+    # old graph, and return a new graph object
     def diff_ratio(self, old_graph, ratio):
-        # get all old leaf nodes and see if their leaks increased
-        leaf_nodes = [n for n in self.g.get_nodes() if not n.has_out_arrows()]
-        for n in leaf_nodes:
-            print n.get_name()
+        graph = Callgraph(self.stack_size_max)
 
+        for old_callstack in old_graph.callstacks:
+            for new_callstack in self.callstacks:
+                if old_callstack.cmp(new_callstack):
+                    if new_callstack.leak >= old_callstack.leak * ratio:
+                        graph.addCallstack( new_callstack )
+        return graph
 
     def draw(self, fname="leak.dot", node="ROOT"):
         global output_dir
@@ -408,47 +413,61 @@ class Callgraph:
 
 
 def init_g():
+    global leakedbytes, in_leakedbytes, kind, in_kind, undefined
     global g
     g = []
+
+    # init parser values
+    leakedbytes = "0"  # init that value
+    in_leakedbytes = False
+    kind = ""
+    in_kind = False
+    undefined=1
         
 
 def add_files(files):
     for f in files: 
         importXmlFile(f)
 
-def print_graph():
-    global g
+def print_graph(g):
     for graph in g:
         graph[1].draw(graph[0])
 
 def build_cmd(args):
+    global g
     init_g()
     add_files(args.files)
-    print_graph()
+    print_graph(g)
 
 
 def diff_cmd(args):
-    global g, gdiff, leakedbytes, in_leakedbytes, kind, in_kind, undefined
+    global g
+    # import old graphs 
     init_g()
     add_files(args.difffiles)
-    gdiff = g
+    g_old = g
+
+    # import new graphs
     init_g()
-    leakedbytes = "0"  # init that value
-    in_leakedbytes = False
-    kind = ""
-    in_kind = False
-    undefined=1
     add_files(args.files)
-    for graph in g:
-        for dgraph in gdiff:
+    g_new = g
+
+    # init result graph 
+    init_g()
+
+    for graph in g_new:
+        for dgraph in g_old:
             if graph[0] == dgraph[0]: # compare kinds
                 if args.diffonly:
                     graph[1].diff_only(dgraph[1])
+                    print_graph(g_new)
                 elif args.ratio != 0:
-                    graph[1].diff_ratio(dgraph[1],args.ratio)
+                    diff_graph = graph[1].diff_ratio(dgraph[1],args.ratio)
+                    g.append( [graph[0], diff_graph] )
+                    print_graph(g)
                 else:
                     graph[1].diff(dgraph[1])
-    print_graph()
+                    print_graph(g_new)
 
 
 
