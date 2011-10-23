@@ -84,25 +84,21 @@ def compute_node_name_attr(func):
 # process callstack add the callstack to the good graph, depending on the kind
 # of error. If the kind is new, a new graph is created
 def process_callstack(kind, callstack, leakedbyte):
-    global g, depthMax, separate_kinds
+    global g, depthMax
 
     if kind=="":
         return
 
     # search if the kind exists and if so, add to the graph
-    if separate_kinds:
-        for graph in g:
-            if graph[0] == kind:
-                graph[1].addCallStack(callstack, int(leakedbytes))
-                return
+    for graph in g:
+        if graph[0] == kind:
+            graph[1].addCallStack(callstack, int(leakedbytes))
+            return
 
-        # if the kind doesn't exist yet, create it
-        graph = callgraph(depthMax) 
-        graph.addCallStack(callstack, int(leakedbytes))
-        g.append( [kind, graph] )
-    else:
-        callstack.insert(0, kind) 
-        g.addCallStack(callstack, int(leakedbytes))
+    # if the kind doesn't exist yet, create it
+    graph = callgraph(depthMax) 
+    graph.addCallStack(callstack, int(leakedbytes))
+    g.append( [kind, graph] )
 
 def begin_stack():
     global parsing, call, stack, in_call, in_stack
@@ -387,29 +383,22 @@ class callgraph:
 
 def init_g():
     global g
-    if separate_kinds:
-        g = []
-    else:
-        g = callgraph()
+    g = []
         
 
 def add_files(files):
     for f in files: 
         importXmlFile(f)
 
-def print_graph(separated):
+def print_graph():
     global g
-    if separated:
-        for graph in g:
-            graph[1].draw(graph[0])
-    else:
-        g.draw("graph.dot")
-
+    for graph in g:
+        graph[1].draw(graph[0])
 
 def build_cmd(args):
     init_g()
     add_files(args.files)
-    print_graph(not args.single)
+    print_graph()
 
 
 def diff_cmd(args):
@@ -424,22 +413,16 @@ def diff_cmd(args):
     in_kind = False
     undefined=1
     add_files(args.files)
-    if args.single:
-        if args.diffonly:
-            g.diff_only(gdiff,args.ratio) 
-        else:
-            g.diff(gdiff) 
-    else:
-        for graph in g:
-            for dgraph in gdiff:
-                if graph[0] == dgraph[0]: # compare kinds
-                    if args.diffonly:
-                        graph[1].diff_only(dgraph[1])
-                    elif args.ratio:
-                        graph[1].diff_ratio(dgraph[1],args.ratio)
-                    else:
-                        graph[1].diff(dgraph[1])
-    print_graph(not args.single)
+    for graph in g:
+        for dgraph in gdiff:
+            if graph[0] == dgraph[0]: # compare kinds
+                if args.diffonly:
+                    graph[1].diff_only(dgraph[1])
+                elif args.ratio != 0:
+                    graph[1].diff_ratio(dgraph[1],args.ratio)
+                else:
+                    graph[1].diff(dgraph[1])
+    print_graph()
 
 
 
@@ -453,9 +436,6 @@ def diff_cmd(args):
 import argparse
 parser = argparse.ArgumentParser(prog='visualvalgrind')
 # common arguments
-parser.add_argument('-s', action='store_false', default=False,
-                    dest='single',
-                    help='build a single graph with all errors categories')
 parser.add_argument('-finfo', action='store_true', default=False,
                     dest='finfo',
                     help='write file name and line numbers')
@@ -485,7 +465,7 @@ diff_mode = parser_diff.add_mutually_exclusive_group()
 diff_mode.add_argument('-i', action='store_true', default=False,
                     dest='diffonly', help='only display leaks that have increased')
 diff_mode.add_argument('-r', action='store', dest='ratio', type=float,
-                    default=1, help='only display leaks that have increased by at least <ratio> times')
+                    default=0, help='only display leaks that have increased by at least <ratio> times')
 parser_diff.set_defaults(func=diff_cmd)
 
 
@@ -495,7 +475,6 @@ demangle=False
 writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
-separate_kinds = not args.single
 output_dir = args.output_dir 
 
 
