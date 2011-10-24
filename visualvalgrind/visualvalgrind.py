@@ -390,7 +390,7 @@ class Callgraph:
 
         for old_callstack in old_graph.callstacks:
             for new_callstack in self.callstacks:
-                if old_callstack.cmp(new_callstack):
+                if old_callstack.cmp(new_callstack) and new_callstack.leak !=0:
                     if new_callstack.leak >= old_callstack.leak * ratio:
                         graph.addCallstack( new_callstack )
         return graph
@@ -431,7 +431,9 @@ def add_files(files):
 
 def print_graph(g):
     for graph in g:
-        graph[1].draw(graph[0])
+        # print if it has nodes (except ROOT)
+        if len(graph[1].g.nodes) > 1:
+            graph[1].draw(graph[0])
 
 def build_cmd(args):
     global g
@@ -490,9 +492,9 @@ parser.add_argument('-t', action='store', dest='truncate', type=int,
                     default=50, help='Max length of symbols')
 parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
-#parser.add_argument('-d', action='store_true', default=False,
-#                    dest='demangle',
-#                    help='demangle symbols')
+parser.add_argument('-d', action='store_true', default=False,
+                    dest='demangle',
+                    help='demangle symbols')
 subparsers = parser.add_subparsers(help='sub-command help')
 
 #sub-command "build"
@@ -516,7 +518,7 @@ parser_diff.set_defaults(func=diff_cmd)
 
 args = parser.parse_args()
 
-demangle=False
+demangle=args.demangle
 writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
