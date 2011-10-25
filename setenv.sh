@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # find out the directory where this script is
-DIR=$(cd $(/usr/bin/dirname "${BASH_SOURCE[$0]}"); pwd)
+DIR=$(cd $(/usr/bin/dirname "${BASH_SOURCE[0]}"); pwd)
 REALDIR="$(readlink -f $DIR)"
 LIBDIR="$REALDIR/visualvalgrind/libs"
 
