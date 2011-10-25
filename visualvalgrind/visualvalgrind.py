@@ -30,17 +30,18 @@ class ValgrindDOTExporter(DOTExporter):
         dst_name = arrow.get_dst_node().get_name() 
         if arrow.has_attr("color"):
            self.f.write(src_name + " -> " + dst_name +
-                " [label="+str(arrow.get_attr("leak")) + ", color="+str(arrow.get_attr("color"))+"]\n")
+                " [label="+str(arrow.get_attr("leak")) + ", "\
+                "color="+str(arrow.get_attr("color"))+"]\n")
         else: 
             self.f.write(src_name + " -> " + dst_name +
                 " [label="+str(arrow.get_attr("leak")) + "]\n")
 
     def export_node(self, node):
+        name = node.get_name() if not demangle else node.get_attr("demangled")
         if node.has_attr("color") and str(node.get_attr("color")) != "none" :
-            self.f.write(node.get_name() +
-                " [color="+str(node.get_attr("color")) + ", style=filled]\n")
+            self.f.write(name + " [color="+str(node.get_attr("color")) + ", style=filled]\n")
         else: 
-            self.f.write(node.get_name() + '\n')
+            self.f.write(name + '\n')
 
 #
 #  parsing from xml file
@@ -160,11 +161,7 @@ def add_call_attribute(value):
     global call, parsing, demangle
     if parsing=="fn": 
         # demangle the function name
-        if demangle:
-            fn = subprocess.Popen(["c++filt",value,"-p"],stdout=subprocess.PIPE).communicate()[0]
-            fn = fn.strip(" \r\n") 
-        else:
-            fn = value.strip(" \r\n")
+        fn = value.strip(" \r\n")
         if len(fn)>truncateVal:
             fn = fn[:truncateVal]+".."
         call[0]= fn
@@ -395,6 +392,20 @@ class Callgraph:
                         graph.addCallstack( new_callstack )
         return graph
 
+    def demangle(self):
+        # get demangled node names
+        s = ""
+        for n in self.g.nodes:
+            s += n.strip("\"") + "\n"
+        demangled_nodes = subprocess.Popen(["c++filt", "-p"],
+                                           stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE).communicate(s)[0]
+        demangled_nodes = demangled_nodes.split("\n")
+        
+        # add parameter to each node
+        for i,node_name in enumerate(self.g.nodes):
+            self.g.get_node(node_name).add_attr("demangled", demangled_nodes[i])
+    
     def draw(self, fname="leak.dot", node="ROOT"):
         global output_dir
         # create dot file
@@ -432,6 +443,8 @@ def add_files(files):
 def print_graph(g):
     for graph in g:
         # print if it has nodes (except ROOT)
+        if demangle:
+            graph[1].demangle()
         if len(graph[1].g.nodes) > 1:
             graph[1].draw(graph[0])
 
