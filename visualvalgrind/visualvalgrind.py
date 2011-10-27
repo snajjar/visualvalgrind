@@ -5,6 +5,7 @@ import string
 import xml.parsers.expat
 import subprocess
 import re
+import sys
 
 # Import IOGraph
 import sys
@@ -545,7 +546,7 @@ demangle=args.demangle
 writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
-output_dir = args.output_dir 
+output_dir = unicode(args.output_dir, sys.stdin.encoding) 
 svg = args.svg
 
 
