@@ -407,14 +407,21 @@ class Callgraph:
             self.g.get_node(node_name).add_attr("demangled", demangled_nodes[i])
     
     def draw(self, fname="leak.dot", node="ROOT"):
-        global output_dir
+        global output_dir, svg
         # create dot file
         e = ValgrindDOTExporter(self.g)
         e.add_attr("rankdir", "LR") # add attribute to the exporter
+        path = fname
         if( output_dir ):
-            e.export( output_dir + "/" + fname + ".dot", fname)
-        else:
-            e.export(fname + ".dot", fname)
+            path = output_dir + "/" + path
+        e.export( path + ".dot", fname)
+        if svg:
+            try:
+                subprocess.call(["dot", "-Tsvg", path+".dot"],stdout=open(path+".svg", 'w'))
+            except:
+                print "Command dot has failed. Ensure your systems has dot installed."
+            subprocess.call(["rm", path+".dot"])
+
 
 
 #
@@ -500,14 +507,17 @@ parser.add_argument('-finfo', action='store_true', default=False,
                     dest='finfo',
                     help='write file name and line numbers')
 parser.add_argument('-depth', action='store', dest='depth', type=int,
-                    default=12, help='Depth of the graph')
+                    default=12, help='maximal depth of the graph')
 parser.add_argument('-t', action='store', dest='truncate', type=int,
-                    default=50, help='Max length of symbols')
+                    default=50, help='maximal length of symbols')
 parser.add_argument('-o', '--output-dir', action='store', dest='output_dir',
                     help='change output directory')
 parser.add_argument('-d', action='store_true', default=False,
                     dest='demangle',
                     help='demangle symbols')
+parser.add_argument('-svg', action='store_true', default=False,
+                    dest='svg',
+                    help='output files in SVG format instead of DOT')
 subparsers = parser.add_subparsers(help='sub-command help')
 
 #sub-command "build"
@@ -536,6 +546,7 @@ writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
 output_dir = args.output_dir 
+svg = args.svg
 
 
 #
