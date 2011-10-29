@@ -418,10 +418,32 @@ class Callgraph:
         e.export( path + ".dot", fname)
         if svg:
             try:
-                subprocess.call(["dot", "-Tsvg", path+".dot"],stdout=open(path+".svg", 'w'))
+                subprocess.call(["dot", "-Tsvg", path+".dot"],stdout=open(path+".svg.bak", 'w'))
+                subprocess.call(["rm", path+".dot"])
             except:
                 print "Command dot has failed. Ensure your systems has dot installed."
-            subprocess.call(["rm", path+".dot"])
+            firstg = True
+            f = open(path+".svg", 'w')
+            for line in open(path+".svg.bak"):
+                if firstg:
+                    if line.find("<svg ") >= 0 :
+                        f.write("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n")
+                        f.write("<script type=\"text/ecmascript\">\n")
+                        f.write("<![CDATA[")
+                        for liblines in open("libs/SVGPan.js"):
+                            f.write(liblines);
+                        f.write("// ]]>")
+                        f.write("</script>\n")
+                    elif line.find("<g ") >= 0:
+                        f.write(line.replace("graph0","viewport"))
+                        firstg = False
+                else:
+                   f.write(line)
+            f.close()      
+            subprocess.call(["rm", path+".svg.bak"])
+                
+
+            
 
 
 
@@ -546,7 +568,9 @@ demangle=args.demangle
 writeFileName=args.finfo    # write with the function name the filename and line
 depthMax=args.depth         # max depth of the graph (and the call stacks)
 truncateVal=args.truncate   # value to truncate function names to
-output_dir = unicode(args.output_dir, sys.stdin.encoding) 
+output_dir = args.output_dir
+if output_dir:
+    output_dir = unicode(output_dir, sys.stdin.encoding) 
 svg = args.svg
 
 
