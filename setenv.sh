@@ -10,6 +10,6 @@ test=$(echo $PYTHONPATH | sed "s/:/\n/g")
 if [ "$test" = "" ]; then
    export PYTHONPATH=$PYTHONPATH:$LIBDIR
 fi
-alias vv="$REALDIR/visualvalgrind/visualvalgrind.py"
-alias visualvalgrind="$REALDIR/visualvalgrind/visualvalgrind.py"
+alias vv="$REALDIR/visualvalgrind/src/visualvalgrind.py"
+alias visualvalgrind="$REALDIR/visualvalgrind/src/visualvalgrind.py"
 
