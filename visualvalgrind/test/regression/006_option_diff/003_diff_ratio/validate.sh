@@ -7,13 +7,13 @@ LIBDIR="$REALDIR/visualvalgrind/libs"
 
 
 rm -f *.dot 2>&1 > /dev/null
-PYTHONPATH="$LIBDIR" ../../../../visualvalgrind.py diff -r 1 -new valtest2.xml -old valtest1.xml
+PYTHONPATH="$LIBDIR" ../../../../src/visualvalgrind.py diff -r 1 -new valtest2.xml -old valtest1.xml
 mv Leak_DefinitelyLost.dot Leak_DefinitelyLost_r1.dot
 
-PYTHONPATH="$LIBDIR" ../../../../visualvalgrind.py diff -r 10 -new valtest2.xml -old valtest1.xml
+PYTHONPATH="$LIBDIR" ../../../../src/visualvalgrind.py diff -r 10 -new valtest2.xml -old valtest1.xml
 mv Leak_DefinitelyLost.dot Leak_DefinitelyLost_r10.dot
 
-PYTHONPATH="$LIBDIR" ../../../../visualvalgrind.py diff -r 11 -new valtest2.xml -old valtest1.xml
+PYTHONPATH="$LIBDIR" ../../../../src/visualvalgrind.py diff -r 11 -new valtest2.xml -old valtest1.xml
 
 for file in $(ls *.dot)
 do

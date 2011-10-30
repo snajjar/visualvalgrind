@@ -7,7 +7,7 @@ LIBDIR="$REALDIR/visualvalgrind/libs"
 
 
 rm -f *.dot 2>&1 > /dev/null
-PYTHONPATH="$LIBDIR" ../../../../visualvalgrind.py -t 5 build valtest.xml
+PYTHONPATH="$LIBDIR" ../../../../src/visualvalgrind.py -t 5 build valtest.xml
 for file in $(ls *.dot)
 do
     expected="$(basename $file .dot).expected"
