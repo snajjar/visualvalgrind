@@ -9,7 +9,7 @@ LIBDIR="$REALDIR/visualvalgrind/libs"
 rm -f *.dot 2>&1 > /dev/null
 rm -rf output_dir/
 mkdir output_dir
-PYTHONPATH="$LIBDIR" ../../../../visualvalgrind.py -o output_dir build valtest.xml
+PYTHONPATH="$LIBDIR" ../../../../src/visualvalgrind.py -o output_dir build valtest.xml
 
 # test that nothing is outputed in current directory
 test=$(ls *.dot 2> /dev/null)
