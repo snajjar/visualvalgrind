@@ -1,0 +1,14 @@
+digraph InvalidRead {
+rankdir=LR
+"<undefined 5>" [color=lightblue, style=filled]
+"<undefined 2>" [color=lightblue, style=filled]
+"malloc\nvg_replace_malloc.c:207"
+"<undefined 3>" [color=lightblue, style=filled]
+ROOT
+"<undefined 4>" [color=lightblue, style=filled]
+ROOT -> "<undefined 4>" [label=0]
+ROOT -> "malloc\nvg_replace_malloc.c:207" [label=0]
+"malloc\nvg_replace_malloc.c:207" -> "<undefined 3>" [label=0]
+ROOT -> "<undefined 2>" [label=0]
+"malloc\nvg_replace_malloc.c:207" -> "<undefined 5>" [label=0]
+}

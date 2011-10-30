@@ -1,0 +1,37 @@
+digraph SyscallParam {
+rankdir=LR
+"main\nbootstrap.cxx:204" [color=lightblue, style=filled]
+"XOpenDisplay"
+"fgOpenWindow"
+"fgCreateWindow"
+"_X11TransWrite"
+"XSetWMProperties"
+"glutCreateWindow"
+"__write_nocancel"
+"calloc\nvg_replace_malloc.c:391"
+"<undefined 6>"
+"XInternAtom"
+"fgOSOpenWindow(int, int, int, bool, bool, bool)\nfg_os.cxx:211"
+"_XReply"
+"fgMainInit(int, char**)\nmain.cxx:998"
+ROOT
+"glutInit"
+"fgMainInit(int, char**)\nmain.cxx:1022"
+"glutInit" -> "fgMainInit(int, char**)\nmain.cxx:998" [label=0]
+"_XReply" -> "XInternAtom" [label=0]
+"<undefined 6>" -> "_XReply" [label=0]
+"XSetWMProperties" -> "fgOpenWindow" [label=0]
+"fgCreateWindow" -> "glutCreateWindow" [label=0]
+"calloc\nvg_replace_malloc.c:391" -> "XOpenDisplay" [label=0]
+"XInternAtom" -> "XSetWMProperties" [label=0]
+"fgOpenWindow" -> "fgCreateWindow" [label=0]
+"fgOSOpenWindow(int, int, int, bool, bool, bool)\nfg_os.cxx:211" -> "fgMainInit(int, char**)\nmain.cxx:1022" [label=0]
+"glutCreateWindow" -> "fgOSOpenWindow(int, int, int, bool, bool, bool)\nfg_os.cxx:211" [label=0]
+"fgMainInit(int, char**)\nmain.cxx:998" -> "main\nbootstrap.cxx:204" [label=0]
+ROOT -> "calloc\nvg_replace_malloc.c:391" [label=0]
+"__write_nocancel" -> "_X11TransWrite" [label=0]
+ROOT -> "__write_nocancel" [label=0]
+"XOpenDisplay" -> "glutInit" [label=0]
+"_X11TransWrite" -> "<undefined 6>" [label=0]
+"fgMainInit(int, char**)\nmain.cxx:1022" -> "main\nbootstrap.cxx:204" [label=0]
+}

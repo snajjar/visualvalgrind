@@ -1,0 +1,16 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"operator new(unsigned int)"
+"<undefined 2>" [color=lightblue, style=filled]
+"<undefined 8>" [color=lightblue, style=filled]
+"malloc"
+"nss_parse_service_list" [color=lightblue, style=filled]
+ROOT
+"safe_malloc" [color=lightblue, style=filled]
+"operator new(unsigned int)" -> "<undefined 8>" [label=186]
+"malloc" -> "nss_parse_service_list" [label=160]
+ROOT -> "operator new(unsigned int)" [label=227]
+"operator new(unsigned int)" -> "<undefined 2>" [label=41]
+"malloc" -> "safe_malloc" [label=35]
+ROOT -> "malloc" [label=195]
+}
