@@ -1,1 +1,1 @@
-../../visualvalgrind/visualvalgrind.py
+../../visualvalgrind/src/visualvalgrind.py
