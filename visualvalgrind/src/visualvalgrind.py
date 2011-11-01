@@ -10,37 +10,7 @@ sys.path.append('../iograph/src/exporter/DOTExporter')
 # Import pygraph
 from XMLParser import *
 
-#
-#   XML Parsing 
-#
-##############################################################################
 
-def xml_start_element(name, attr):
-    xmlparse.xml_start_element(name, attr)
-
-def xml_handle_data(data):
-    xmlparse.xml_handle_data(data)
-
-def xml_end_element(name):
-    xmlparse.xml_end_element(name)
-
-def importXmlFile(fname):
-    # init the parser
-    p = xml.parsers.expat.ParserCreate()
-    p.StartElementHandler = xml_start_element
-    p.EndElementHandler = xml_end_element
-    p.CharacterDataHandler = xml_handle_data
-
-    # parse the file 
-    f = open(fname)
-    xmlContent = f.read()
-    xmlContent = re.sub("\&.*;", "", xmlContent) # remove &amp; and stuff like that
-    p.Parse(xmlContent)
-    try:
-        None
-    except:
-        print "Error: the file " + fname + " is not well-formed"
-    f.close()
 
 #
 #  command calls
@@ -48,13 +18,12 @@ def importXmlFile(fname):
 ##############################################################################
 
 def init_g():
-    global g, xmlparse, args
+    global g, args
     g = []
-    xmlparse = XMLParser(args, g)
+    XMLParser.xmlparse = XMLParser(args, g)
 
 
 def add_files(files):
-    global xmlparse
     for f in files: 
         importXmlFile(f)
 
