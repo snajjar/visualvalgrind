@@ -1,0 +1,24 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"safe.."
+"__ns..\nnsswitch.c:167" [color=lightblue, style=filled]
+"<undefined 9>" [color=lightblue, style=filled]
+"mall..\nvg_replace_malloc.c:236"
+"nmap.." [color=lightblue, style=filled]
+"<undefined 2>"
+"<undefined 3>" [color=lightblue, style=filled]
+"<undefined 8>"
+"oper..\nvg_replace_malloc.c:255"
+ROOT
+"nss_..\nnsswitch.c:626"
+"oper..\nvg_replace_malloc.c:255" -> "<undefined 8>" [label=186]
+"mall..\nvg_replace_malloc.c:236" -> "nss_..\nnsswitch.c:626" [label=160]
+ROOT -> "oper..\nvg_replace_malloc.c:255" [label=596]
+"safe.." -> "nmap.." [label=35]
+"nss_..\nnsswitch.c:626" -> "__ns..\nnsswitch.c:167" [label=160]
+"oper..\nvg_replace_malloc.c:255" -> "<undefined 2>" [label=410]
+"mall..\nvg_replace_malloc.c:236" -> "safe.." [label=35]
+ROOT -> "mall..\nvg_replace_malloc.c:236" [label=195]
+"<undefined 2>" -> "<undefined 3>" [label=410]
+"<undefined 8>" -> "<undefined 9>" [label=186]
+}

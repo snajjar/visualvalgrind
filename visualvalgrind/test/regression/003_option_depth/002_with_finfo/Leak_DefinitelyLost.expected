@@ -1,0 +1,16 @@
+digraph Leak_DefinitelyLost {
+rankdir=LR
+"operator new(unsigned int)\nvg_replace_malloc.c:255"
+"malloc\nvg_replace_malloc.c:236"
+"<undefined 2>" [color=lightblue, style=filled]
+"<undefined 8>" [color=lightblue, style=filled]
+"safe_malloc" [color=lightblue, style=filled]
+ROOT
+"nss_parse_service_list\nnsswitch.c:626" [color=lightblue, style=filled]
+"malloc\nvg_replace_malloc.c:236" -> "safe_malloc" [label=35]
+"malloc\nvg_replace_malloc.c:236" -> "nss_parse_service_list\nnsswitch.c:626" [label=160]
+ROOT -> "malloc\nvg_replace_malloc.c:236" [label=195]
+ROOT -> "operator new(unsigned int)\nvg_replace_malloc.c:255" [label=227]
+"operator new(unsigned int)\nvg_replace_malloc.c:255" -> "<undefined 2>" [label=41]
+"operator new(unsigned int)\nvg_replace_malloc.c:255" -> "<undefined 8>" [label=186]
+}
