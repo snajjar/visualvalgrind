@@ -38,7 +38,7 @@ class ValgrindDOTExporter(DOTExporter):
                 " [label="+str(arrow.get_attr("leak")) + "]\n")
 
     def export_node(self, node):
-        name = node.get_name() if not demangle else node.get_attr("demangled")
+        name = node.get_name() if not demangle else "\"" + node.get_attr("demangled") + "\""
         if node.has_attr("color") and str(node.get_attr("color")) != "none" :
             self.f.write(name + " [color="+str(node.get_attr("color")) + ", style=filled]\n")
         else: 
