@@ -2,229 +2,18 @@
 import os
 import sys
 import string
-import xml.parsers.expat
-import subprocess
-import re
-import sys
 
 # Import IOGraph
-import sys
 sys.path.append('../iograph/src/core')
 sys.path.append('../iograph/src/exporter/DOTExporter')
 
 # Import pygraph
-from IOGraph import *
-from DOTExporter import *
-
-# raise that exception in case of parsing error
-class EndParsingError(Exception):
-    pass
+from XMLParser import *
 
 #
-#  Exporter for valgrind graph 
-#       redefine some functions
-###############################################################################
-class ValgrindDOTExporter(DOTExporter):
-
-    def export_arrow(self, arrow):
-        src_name = arrow.get_src_node().get_name() 
-        dst_name = arrow.get_dst_node().get_name() 
-        if arrow.has_attr("color"):
-            self.f.write(src_name + " -> " + dst_name +
-                    " [label="+str(arrow.get_attr("leak")) + ", "\
-                            "color="+str(arrow.get_attr("color"))+"]\n")
-        else: 
-            self.f.write(src_name + " -> " + dst_name +
-                    " [label="+str(arrow.get_attr("leak")) + "]\n")
-
-    def export_node(self, node):
-        name = node.get_name() if not demangle else "\"" + node.get_attr("demangled") + "\""
-        if node.has_attr("color") and str(node.get_attr("color")) != "none" :
-            self.f.write(name + " [color="+str(node.get_attr("color")) + ", style=filled]\n")
-        else: 
-            self.f.write(name + '\n')
-
+#   XML Parsing 
 #
-#  parsing from xml file
-#
-###############################################################################
-
-class XMLParser:
-    def __init__(self):
-        self.leakedbytes = "0"  # init that value
-        self.in_leakedbytes = False
-        self.kind = ""
-        self.in_kind = False
-        self.undefined=1
-
-    # build graph name and attributes
-    def compute_node_name_attr(self, func):
-        global writeFileName
-        shape = "note"
-        fontsize = "9"
-        font = ""
-        fname = func[0]
-        ffile = func[3]
-        fline = func[2]
-
-        # don't loose track of undefined function, make them have a different name
-        if fname=="":
-            fname="<undefined "+str(self.undefined)+">"
-            self.undefined += 1
-
-        # if user wants file and line number, give it to him
-        if writeFileName:
-            label=fname
-            if ffile!="" and fline!="":
-                label+="\\n"+ffile+":"+fline
-            else:
-                label = fname
-        else:
-            label = fname
-        return "\"" + label + "\""
-
-    # process callstack add the callstack to the good graph, depending on the kind
-    # of error. If the kind is new, a new graph is created
-    def process_callstack(self,cs):
-        global g, depthMax
-
-        if self.kind=="":
-            return
-
-        # search if the kind exists and if so, add to the graph
-        for graph in g:
-            if graph[0] == cs.kind:
-                graph[1].addCallstack(cs)
-                return
-
-        # if the kind doesn't exist yet, create it
-        graph = Callgraph(depthMax) 
-        graph.addCallstack(cs)
-        g.append( [cs.kind, graph] )
-
-    def begin_stack(self):
-        self.in_stack = True 
-        self.stack = [] 
-
-    def end_stack(self):
-        self.in_stack = False
-        # build the call stack and add it to graph
-        func_stack = []
-        for func in self.stack:
-            node_name = self.compute_node_name_attr(func)
-            func_stack.append(node_name)
-        func_stack.insert(0, "ROOT")
-        cs = Callstack(self.kind, func_stack, int(self.leakedbytes))
-        self.process_callstack(cs)
-        self.stack = []
-
-    def begin_call(self):
-        self.in_call = True
-        self.call = ['' for i in xrange(4)]
-
-    def end_call(self):
-        self.in_call = False
-        self.stack.append(self.call)
-        self.call = [] 
-
-    def begin_error(self):
-        self.in_error = True
-
-    def end_error(self):
-        self.in_error = False 
-        self.leakedbytes = 0
-
-    def begin_leakedbytes(self):
-        self.in_leakedbytes = True
-
-    def end_leakedbytes(self):
-        self.in_leakedbytes = False 
-
-    def begin_kind(self):
-        self.in_kind = True
-
-    def end_kind(self):
-        self.in_kind = False
-
-
-    def add_call_attribute(self, value):
-        if self.parsing=="fn": 
-            # demangle the function name
-            fn = value.strip(" \r\n")
-            if len(fn)>truncateVal:
-                fn = fn[:truncateVal]+".."
-            self.call[0]= fn
-        if self.parsing=="dir": 
-            self.call[1]=value
-        if self.parsing=="line": 
-            self.call[2]=value
-        if self.parsing=="file": 
-            self.call[3]=value
-
-
-    # 3 handlers that are called when parsing xml
-    def xml_start_element(self, name, attr):
-        self.parsing = name
-        if name=="stack":
-            self.begin_stack()
-        if name=="frame":
-            self.begin_call()
-        if name=="error":
-            self.begin_error()
-        if name=="leakedbytes":
-            self.begin_leakedbytes()
-        if name=="kind":
-            self.begin_kind()
-
-    def xml_handle_data(self, data):
-        if data=='\n':
-            return
-
-        stripped_data = data.strip(" \r\n")
-        if self.in_call:
-            if stripped_data != "":
-                self.add_call_attribute(stripped_data)
-        if self.in_leakedbytes:
-            self.leakedbytes = stripped_data
-        if self.in_kind:
-            self.kind = stripped_data
-
-    def xml_end_element(self, name):
-        self.parsing = ""
-        if name=="stack":
-            self.end_stack()
-        if name=="frame":
-            self.end_call()
-        if name=="error":
-            self.end_error()
-        if name=="leakedbytes":
-            self.end_leakedbytes()
-        if name=="kind":
-            self.end_kind()
-
-    def importXmlFile(self, fname):
-        # init the parser
-        p = xml.parsers.expat.ParserCreate()
-        p.StartElementHandler = xml_start_element
-        p.EndElementHandler = xml_end_element
-        p.CharacterDataHandler = xml_handle_data
-
-        # first round just to create all global var
-        self.begin_stack()
-        self.begin_call()
-        self.end_call()
-        self.end_stack()
-
-        # parse the file 
-        f = open(fname)
-        xmlContent = f.read()
-        xmlContent = re.sub("\&.*;", "", xmlContent) # remove &amp; and stuff like that
-        p.Parse(xmlContent)
-        try:
-            None
-        except:
-            print "Error: the file " + fname + " is not well-formed"
-        f.close()
+##############################################################################
 
 def xml_start_element(name, attr):
     xmlparse.xml_start_element(name, attr)
@@ -235,213 +24,23 @@ def xml_handle_data(data):
 def xml_end_element(name):
     xmlparse.xml_end_element(name)
 
+def importXmlFile(fname):
+    # init the parser
+    p = xml.parsers.expat.ParserCreate()
+    p.StartElementHandler = xml_start_element
+    p.EndElementHandler = xml_end_element
+    p.CharacterDataHandler = xml_handle_data
 
-#
-#  call class
-#
-###############################################################################
-class Callstack:
-    def __init__(self, kind, stack, leak=0):
-        self.stack = stack
-        self.kind = kind
-        self.leak=leak
-
-    # compare callstacks (on kind and stack)
-    def cmp(self, callstack):
-        if self.kind != callstack.kind:
-            return False
-        size = len(self.stack)
-        if size != len(callstack.stack):
-            return False
-        for i in xrange(0, size):
-            if self.stack[i] != callstack.stack[i]:
-                return False
-        return True
-
-
-#
-#  Graph class
-#
-###############################################################################
-
-class Callgraph:
-    def __init__(self, stack_size_max=12):
-        self.g = Graph() 
-        self.g.add_node("ROOT")
-        self.stack_size_max = stack_size_max
-        self.callstacks = []
-
-    def addCallstack(self, cs):
-        global undefined
-        # addind "level 0" to the call stack
-        lvl = 0
-        self.callstacks.append(cs) 
-        for call in cs.stack:
-            if lvl >= self.stack_size_max: 
-                break
-            if call=="ROOT":
-                continue
-
-            # try to find if the call exists already in the callgraph
-            if not self.g.has_node(call):
-                self.g.add_node(call)
-                self.g.add_arrow(cs.stack[lvl],call)
-                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
-                # color leave and uncolor source
-                self.g.get_node(call).add_attr("color", "lightblue")
-                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
-            elif not self.g.has_arrow(cs.stack[lvl], call):
-                # check if it's a recursive function
-                self.g.add_arrow(cs.stack[lvl],call)
-                self.g.get_arrow(cs.stack[lvl],call).add_attr("leak", cs.leak)
-                # uncolor source
-                self.g.get_node(cs.stack[lvl]).def_attr("color", "none")
-            else:
-                # change the weight of the edge (num of leaked bytes)
-                arrow = self.g.get_arrow(cs.stack[lvl],call)
-                leaked = arrow.get_attr("leak") 
-                arrow.set_attr("leak", leaked + cs.leak)
-            lvl += 1
-
-    def diff(self, old_graph):
-        # put all new nodes in red
-        for node in self.g.get_nodes():
-            node_name = node.get_name()
-            if not old_graph.g.has_node(node_name):
-                node.def_attr("color","red")
-
-        # for each arrow in old graph, update leak 
-        for old_arrow in old_graph.g.get_arrows():
-            src_name = old_arrow.get_src_node().get_name()
-            dst_name = old_arrow.get_dst_node().get_name()
-
-            # update arrow leak if leak present
-            new_leak = 0
-            if self.g.has_arrow(src_name,dst_name):
-                new_leak = self.g.get_arrow(src_name,dst_name).get_attr("leak")
-            diff_val = new_leak - old_arrow.get_attr("leak")
-
-            if diff_val == 0:
-                continue
-
-            # if there is a difference
-            new_src = None
-            new_dst = None
-            if not self.g.has_node(src_name):
-                self.g.add_node(src_name)
-                new_src = self.g.get_node( src_name )
-                new_src.def_attr("color", "green")
-            if not self.g.has_node(dst_name):
-                self.g.add_node(dst_name)
-                new_dst = self.g.get_node( dst_name )
-                new_dst.def_attr("color", "green")
-            if not new_src:
-                new_src = self.g.get_node( src_name )
-            if not new_dst:
-                new_dst = self.g.get_node( dst_name )
-            if not self.g.has_arrow(src_name, dst_name):
-                self.g.add_arrow(src_name,dst_name)
-
-            diff_arrow = self.g.get_arrow(src_name, dst_name)
-            diff_arrow.add_attr("leak",diff_val)
-            if diff_val > 0:
-                diff_arrow.def_attr("color","red")
-            elif diff_val < 0:
-                diff_arrow.def_attr("color","green")
-
-        # put all red arrows in red
-        for new_arrow in self.g.get_arrows():
-            src_name = new_arrow.get_src_node().get_name()
-            dst_name = new_arrow.get_dst_node().get_name()  
-            if not old_graph.g.has_arrow(src_name, dst_name):
-                new_arrow.def_attr("color","red")
-
-    def diff_only(self, old_graph):
-        # remove all unchanged arrows (or arrow with lower weight)
-        for old_arrow in old_graph.g.get_arrows():
-            src_name = old_arrow.get_src_node().get_name()
-            dst_name = old_arrow.get_dst_node().get_name()
-            old_weight = old_arrow.get_attr("leak")
-
-            new_arrow = self.g.get_arrow(src_name, dst_name)
-            if new_arrow is None:
-                continue
-
-            new_weight = new_arrow.get_attr("leak")
-            if new_weight <= old_weight:
-                self.g.del_arrow(src_name, dst_name)
-
-        # remove all node that aren't link to an arrow anymore
-        # we can not remove element from a list while looping on it 
-        nodes_to_be_removed = [n for n in self.g.get_nodes() if not n.has_arrows()]
-        for node in nodes_to_be_removed:
-            self.g.del_node( node.get_name() )
-
-    # works differently than the 2 previous one. Compare callstacks with the
-    # old graph, and return a new graph object
-    def diff_ratio(self, old_graph, ratio):
-        graph = Callgraph(self.stack_size_max)
-
-        for old_callstack in old_graph.callstacks:
-            for new_callstack in self.callstacks:
-                if old_callstack.cmp(new_callstack) and new_callstack.leak !=0:
-                    if new_callstack.leak >= old_callstack.leak * ratio:
-                        graph.addCallstack( new_callstack )
-        return graph
-
-    def demangle(self):
-        # get demangled node names
-        s = ""
-        for n in self.g.nodes:
-            s += n.strip("\"") + "\n"
-        demangled_nodes = subprocess.Popen(["c++filt", "-p"],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE).communicate(s)[0]
-        demangled_nodes = demangled_nodes.split("\n")
-
-        # add parameter to each node
-        for i,node_name in enumerate(self.g.nodes):
-            self.g.get_node(node_name).add_attr("demangled", demangled_nodes[i])
-
-    def draw(self, fname="leak.dot", node="ROOT"):
-        global output_dir, svg
-        # create dot file
-        e = ValgrindDOTExporter(self.g)
-        e.add_attr("rankdir", "LR") # add attribute to the exporter
-        path = fname
-        if( output_dir ):
-            path = output_dir + "/" + path
-        e.export( path + ".dot", fname)
-        if svg:
-            try:
-                subprocess.call(["dot", "-Tsvg", path+".dot"],stdout=open(path+".svg.bak", 'w'))
-                subprocess.call(["rm", path+".dot"])
-            except:
-                print "Command dot has failed. Ensure your systems has dot installed."
-            firstg = True
-            f = open(path+".svg", 'w')
-            for line in open(path+".svg.bak"):
-                if firstg:
-                    if line.find("<svg ") >= 0 :
-                        f.write("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n")
-                        f.write("<script type=\"text/ecmascript\">\n")
-                        f.write("<![CDATA[")
-                        for liblines in open(sys.path[0]+"/../libs/SVGPan.js"):
-                            f.write(liblines);
-                        f.write("// ]]>")
-                        f.write("</script>\n")
-                    elif line.find("<g ") >= 0:
-                        f.write(line.replace("graph0","viewport"))
-                        firstg = False
-                else:
-                    f.write(line)
-            f.close()      
-            subprocess.call(["rm", path+".svg.bak"])
-
-
-
-
-
+    # parse the file 
+    f = open(fname)
+    xmlContent = f.read()
+    xmlContent = re.sub("\&.*;", "", xmlContent) # remove &amp; and stuff like that
+    p.Parse(xmlContent)
+    try:
+        None
+    except:
+        print "Error: the file " + fname + " is not well-formed"
+    f.close()
 
 #
 #  command calls
@@ -449,20 +48,20 @@ class Callgraph:
 ##############################################################################
 
 def init_g():
-    global g, xmlparse
+    global g, xmlparse, args
     g = []
-    xmlparse = XMLParser()
+    xmlparse = XMLParser(args, g)
 
 
 def add_files(files):
     global xmlparse
     for f in files: 
-        xmlparse.importXmlFile(f)
+        importXmlFile(f)
 
 def print_graph(g):
     for graph in g:
         # print if it has nodes (except ROOT)
-        if demangle:
+        if args.demangle:
             graph[1].demangle()
         if len(graph[1].g.nodes) > 1:
             graph[1].draw(graph[0])
@@ -502,9 +101,6 @@ def diff_cmd(args):
                 else:
                     graph[1].diff(dgraph[1])
                     print_graph(g_new)
-
-
-
 
 #
 #  arg parsing 
@@ -553,14 +149,8 @@ parser_diff.set_defaults(func=diff_cmd)
 
 args = parser.parse_args()
 
-demangle=args.demangle
-writeFileName=args.finfo    # write with the function name the filename and line
-depthMax=args.depth         # max depth of the graph (and the call stacks)
-truncateVal=args.truncate   # value to truncate function names to
-output_dir = args.output_dir
-if output_dir:
-    output_dir = unicode(output_dir, sys.stdin.encoding) 
-svg = args.svg
+if args.output_dir:
+    args.output_dir = unicode(args.output_dir, sys.stdin.encoding) 
 
 
 #
