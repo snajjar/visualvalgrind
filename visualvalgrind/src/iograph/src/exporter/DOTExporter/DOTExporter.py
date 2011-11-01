@@ -1,9 +1,7 @@
 # !/usr/bin/env python
 
 import sys
-sys.path.append("../core/")
-
-from attribute_object import *
+from iograph.src.core.attribute_object import *
 
 class DOTExporter(attribute_object):
     def __init__(self, graph):

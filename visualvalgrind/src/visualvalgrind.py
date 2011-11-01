@@ -3,12 +3,8 @@ import os
 import sys
 import string
 
-# Import IOGraph
-sys.path.append('../iograph/src/core')
-sys.path.append('../iograph/src/exporter/DOTExporter')
-
 # Import pygraph
-from XMLParser import *
+from importer.XMLParser import * 
 
 
 
